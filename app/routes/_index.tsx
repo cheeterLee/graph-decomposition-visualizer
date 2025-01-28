@@ -263,6 +263,12 @@ export default function Index() {
 		const svgNode = svg.node();
 		if (!svgNode) return;
 		svgContainerRef.current.appendChild(svgNode);
+
+		return () => {
+			// cleanup svgNode appended to dom
+			if (!svgContainerRef.current) return;
+			svgContainerRef.current.removeChild(svgNode);
+		};
 	}, []);
 
 	// Effect to re-draw SVG upon user interaction
@@ -387,6 +393,21 @@ export default function Index() {
 				"glowing-node",
 				(d) => isAddEdgeMode === true && highlightedElement?.id !== d.id
 			);
+
+		return () => {
+			// remove event listeners
+			linksGroup.selectAll("line").on("click", null);
+			nodesGroup.selectAll("g.node-group").on("click", null);
+			nodesGroup
+				.selectAll<SVGGElement, Vertex>("g.node-group")
+				.call(
+					d3
+						.drag<SVGGElement, Vertex>()
+						.on("start", null)
+						.on("drag", null)
+						.on("end", null)
+				);
+		};
 	}, [
 		vertices,
 		edges,
@@ -479,5 +500,5 @@ export default function Index() {
 				<div className="border-2 border-stone-300 w-full row-span-1 rounded-lg"></div>
 			</div>
 		</main>
-	)
+	);
 }
