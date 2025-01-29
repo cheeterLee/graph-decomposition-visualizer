@@ -33,14 +33,19 @@ export const meta: MetaFunction = () => {
 	];
 };
 
-hljs.registerLanguage("javascript", javascript);
-
 function CodeSnippet() {
 	const codeRef = React.useRef<HTMLElement | null>(null);
 
 	React.useEffect(() => {
 		if (!codeRef.current) return;
-		hljs.highlightBlock(codeRef.current);
+
+		hljs.registerLanguage("javascript", javascript);
+		hljs.highlightElement(codeRef.current);
+
+		// temporary solution to avoid highlighting effect runs twice
+		return () => {
+			codeRef.current = null
+		};
 	}, []);
 
 	return (
@@ -210,9 +215,15 @@ export default function Index() {
 		const svgRectWidth = svgRect.width;
 		const svgRectHeight = svgRect.height;
 
-		const padding = 16
-		const clampedX = Math.max(padding, Math.min(event.x, svgRectWidth - padding));
-		const clampedY = Math.max(padding, Math.min(event.y, svgRectHeight - padding));
+		const padding = 16;
+		const clampedX = Math.max(
+			padding,
+			Math.min(event.x, svgRectWidth - padding)
+		);
+		const clampedY = Math.max(
+			padding,
+			Math.min(event.y, svgRectHeight - padding)
+		);
 
 		setVertices((prevVertices) =>
 			prevVertices.map((prevVertex) =>
