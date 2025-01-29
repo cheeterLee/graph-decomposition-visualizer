@@ -202,12 +202,23 @@ export default function Index() {
 	};
 
 	const dragged = (event: d3.D3DragEvent<Element, Vertex, unknown>) => {
+		if (!svgContainerRef.current) return;
+
 		const nodeDragged = event.subject as Vertex;
+
+		const svgRect = svgContainerRef.current.getBoundingClientRect();
+		const svgRectWidth = svgRect.width;
+		const svgRectHeight = svgRect.height;
+
+		const padding = 16
+		const clampedX = Math.max(padding, Math.min(event.x, svgRectWidth - padding));
+		const clampedY = Math.max(padding, Math.min(event.y, svgRectHeight - padding));
+
 		setVertices((prevVertices) =>
 			prevVertices.map((prevVertex) =>
 				prevVertex.id !== nodeDragged.id
 					? prevVertex
-					: { ...prevVertex, cx: event.x, cy: event.y }
+					: { ...prevVertex, cx: clampedX, cy: clampedY }
 			)
 		);
 	};
