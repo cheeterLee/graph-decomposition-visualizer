@@ -2,6 +2,7 @@ import React from "react";
 import * as d3 from "d3";
 import { useSet } from "~/hooks/useSet";
 import { useMap } from "~/hooks/useMap";
+import { useAppSelector, useAppDispatch } from "~/hooks/reduxHooks";
 import { Button } from "~/components/ui/button";
 import { Separator } from "~/components/ui/separator";
 import {
@@ -14,10 +15,15 @@ import {
 	Spline,
 } from "lucide-react";
 import { SvgEditorData, Vertex } from "./types/type";
+import type { RootState } from "~/store";
 import { offset, padding } from "./constants/constant";
+import editorSlice from "./slices/editorSlice";
 
 export default function SVGEditor({ preData }: { preData: SvgEditorData }) {
 	const { data, g, e, maxId } = preData;
+
+	const { cursorMode } = useAppSelector((state: RootState) => state.editor);
+	const dispatch = useAppDispatch();
 
 	const [vertices, setVertices] = React.useState<Vertex[]>(data);
 	const [edges, setEdges] = React.useState<[number, number][]>(e);
@@ -318,16 +324,55 @@ export default function SVGEditor({ preData }: { preData: SvgEditorData }) {
 			className="relative border-2 border-stone-300 flex-1 h-[700px] rounded-lg"
 		>
 			<div className="absolute border-2 border-stone-300 top-1 left-1/2 -translate-x-1/2 h-[50px] rounded-lg flex items-center gap-2 px-4">
-				<Button variant="ghost" size="icon">
-					<MousePointer2 className="text-stone-400" />
-				</Button>
+				{cursorMode === "pointer" ? (
+					<Button
+						variant="ghost"
+						size="icon"
+						className="bg-stone-200"
+					>
+						<MousePointer2
+							fill="#bcaaa4"
+							className="text-[#bcaaa4]"
+						/>
+					</Button>
+				) : (
+					<Button
+						onClick={() =>
+							dispatch(
+								editorSlice.actions.switchCursorMode("pointer")
+							)
+						}
+						variant="ghost"
+						size="icon"
+					>
+						<MousePointer2 className="text-stone-400" />
+					</Button>
+				)}
 				<Separator
 					orientation="vertical"
 					className="h-[60%] bg-stone-300"
 				/>
-				<Button variant="ghost" size="icon">
-					<Grab className="text-stone-400" />
-				</Button>
+				{cursorMode === "grab" ? (
+					<Button
+						variant="ghost"
+						size="icon"
+						className="bg-stone-200"
+					>
+						<Grab fill="#bcaaa4" className="text-stone-300" />
+					</Button>
+				) : (
+					<Button
+						onClick={() =>
+							dispatch(
+								editorSlice.actions.switchCursorMode("grab")
+							)
+						}
+						variant="ghost"
+						size="icon"
+					>
+						<Grab className="text-stone-400" />
+					</Button>
+				)}
 				<Separator
 					orientation="vertical"
 					className="h-[60%] bg-stone-300"
