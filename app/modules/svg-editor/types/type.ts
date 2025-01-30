@@ -5,6 +5,12 @@ export type Vertex = {
 	neighbors: number[];
 };
 
+export type Edge = {
+	id: string;
+	uId: number;
+	vId: number;
+};
+
 export type SvgEditorData = {
 	data: Vertex[];
 	e: [number, number][];

@@ -14,7 +14,7 @@ import {
 	Trash2,
 	Spline,
 } from "lucide-react";
-import { SvgEditorData, Vertex } from "./types/type";
+import { Edge, SvgEditorData, Vertex } from "./types/type";
 import type { RootState } from "~/store";
 import { offset, padding } from "./constants/constant";
 import editorSlice from "./slices/editorSlice";
@@ -22,17 +22,17 @@ import editorSlice from "./slices/editorSlice";
 export default function SVGEditor({ preData }: { preData: SvgEditorData }) {
 	const { data, g, e, maxId } = preData;
 
-	const { cursorMode } = useAppSelector((state: RootState) => state.editor);
-	const dispatch = useAppDispatch();
+	const { cursorMode, vertices, edges, nextVertexId } = useAppSelector(
+		(state: RootState) => state.editor
+	);
 
-	const [vertices, setVertices] = React.useState<Vertex[]>(data);
-	const [edges, setEdges] = React.useState<[number, number][]>(e);
+	const dispatch = useAppDispatch();
 
 	const graph = useMap<number, Vertex>(Array.from(g.entries()));
 
-	const edgesSet = useSet<string>(edges.map((e) => `${e[0]}-${e[1]}`));
-
-	const [nextVertexId, setNextVertexId] = React.useState<number>(maxId + 1);
+	const edgesSet = useSet<string>(
+		edges.map((e) => `${Math.min(e.uId, e.vId)}-${Math.max(e.uId, e.vId)}`)
+	);
 
 	const [highlightedElement, setHighlightedElement] = React.useState<{
 		type: "node" | "edge";
@@ -56,8 +56,9 @@ export default function SVGEditor({ preData }: { preData: SvgEditorData }) {
 	const nodesGroupRef = React.useRef<SVGGElement | null>(null);
 
 	const handleResetGraph = () => {
-		setVertices(data);
-		setEdges(e);
+		dispatch(editorSlice.actions.setVertices([]));
+		dispatch(editorSlice.actions.setNextVertexId(1));
+		dispatch(editorSlice.actions.setEdges([]));
 	};
 
 	const handleAddVertex = () => {
@@ -77,14 +78,22 @@ export default function SVGEditor({ preData }: { preData: SvgEditorData }) {
 
 			neighbors: [],
 		};
-		setVertices([...vertices, newVertex]);
-		setNextVertexId((prevId) => prevId + 1);
+
+		dispatch(editorSlice.actions.addVertex(newVertex));
+		dispatch(editorSlice.actions.setNextVertexId(nextVertexId + 1));
 	};
 
 	const handleAddEdge = (event: React.MouseEvent<HTMLButtonElement>) => {
 		event.stopPropagation();
 		if (!highlightedElement || highlightedElement.type !== "node") return;
 		setIsAddEdgeMode(true);
+	};
+
+	const handleDeleteVertex = (event: React.MouseEvent<HTMLButtonElement>) => {
+		event.stopPropagation();
+		if (!highlightedElement || highlightedElement.type !== "node") return;
+		const targetNodeId = highlightedElement.id as number;
+		dispatch(editorSlice.actions.removeVertex(targetNodeId));
 	};
 
 	const dragStarted = (event: d3.D3DragEvent<Element, Vertex, unknown>) => {
@@ -114,11 +123,13 @@ export default function SVGEditor({ preData }: { preData: SvgEditorData }) {
 			Math.min(event.y, svgRectHeight - padding)
 		);
 
-		setVertices((prevVertices) =>
-			prevVertices.map((prevVertex) =>
-				prevVertex.id !== nodeDragged.id
-					? prevVertex
-					: { ...prevVertex, cx: clampedX, cy: clampedY }
+		dispatch(
+			editorSlice.actions.setVertices(
+				vertices.map((v) =>
+					v.id !== nodeDragged.id
+						? v
+						: { ...v, cx: clampedX, cy: clampedY }
+				)
 			)
 		);
 	};
@@ -179,18 +190,26 @@ export default function SVGEditor({ preData }: { preData: SvgEditorData }) {
 
 		// Data join for links (edges)
 		linksGroup
-			.selectAll<SVGLineElement, [number, number]>("line")
-			.data(edges, (d: [number, number]) => `${d[0]}-${d[1]}`) // Key function for unique identification
+			.selectAll<SVGLineElement, Edge>("line")
+			.data(
+				edges,
+				(d: Edge) =>
+					`${Math.min(d.uId, d.vId)}-${Math.max(d.uId, d.vId)}`
+			) // Key function for unique identification
 			.join("line")
-			.attr("x1", (e) => vertices.find((v) => v.id === e[0])?.cx ?? 0)
-			.attr("y1", (e) => vertices.find((v) => v.id === e[0])?.cy ?? 0)
-			.attr("x2", (e) => vertices.find((v) => v.id === e[1])?.cx ?? 0)
-			.attr("y2", (e) => vertices.find((v) => v.id === e[1])?.cy ?? 0)
+			.attr("x1", (e) => vertices.find((v) => v.id === e.uId)?.cx ?? 0)
+			.attr("y1", (e) => vertices.find((v) => v.id === e.uId)?.cy ?? 0)
+			.attr("x2", (e) => vertices.find((v) => v.id === e.vId)?.cx ?? 0)
+			.attr("y2", (e) => vertices.find((v) => v.id === e.vId)?.cy ?? 0)
 			.attr("stroke", "#DEB887")
 			.attr("stroke-width", 3)
 			.on("click", function (event: MouseEvent, d) {
 				event.stopPropagation();
-				const edgeKey = `${d[0]}-${d[1]}`;
+				// const edgeKey = `${d[0]}-${d[1]}`;
+				const edgeKey = `${Math.min(d.uId, d.vId)}-${Math.max(
+					d.uId,
+					d.vId
+				)}`;
 				if (
 					highlightedElement?.type === "edge" &&
 					highlightedElement.id === edgeKey
@@ -204,7 +223,8 @@ export default function SVGEditor({ preData }: { preData: SvgEditorData }) {
 				"highlighted-edge",
 				(d) =>
 					highlightedElement?.type === "edge" &&
-					highlightedElement.id === `${d[0]}-${d[1]}`
+					highlightedElement.id ===
+						`${Math.min(d.uId, d.vId)}-${Math.max(d.uId, d.vId)}`
 			);
 
 		// Data join for nodes (vertices)
@@ -256,12 +276,20 @@ export default function SVGEditor({ preData }: { preData: SvgEditorData }) {
 						!edgesSet.has(`${d.id}-${sourceNodeId}`) &&
 						!edgesSet.has(`${sourceNodeId}-${d.id}`)
 					) {
-						const newEdge = `${d.id}-${sourceNodeId}`;
-						edgesSet.add(newEdge);
-						setEdges((prevEdges) => [
-							...prevEdges,
-							[d.id, sourceNodeId],
-						]);
+						// const newEdge = `${d.id}-${sourceNodeId}`;
+						const newEdgeId = `${Math.min(d.id, sourceNodeId)}-${
+							(Math.max(d.id), sourceNodeId)
+						}`;
+						edgesSet.add(newEdgeId);
+						const newEdge: Edge = {
+							id: newEdgeId,
+							uId: Math.min(d.id, sourceNodeId),
+							vId: Math.max(d.id, sourceNodeId),
+						};
+						
+						dispatch(
+							editorSlice.actions.setEdges([...edges, newEdge])
+						);
 					}
 
 					setIsAddEdgeMode(false);
@@ -409,7 +437,11 @@ export default function SVGEditor({ preData }: { preData: SvgEditorData }) {
 						orientation="vertical"
 						className="h-[60%] bg-stone-300"
 					/>
-					<Button variant="ghost" className="text-stone-400">
+					<Button
+						onClick={handleDeleteVertex}
+						variant="ghost"
+						className="text-stone-400"
+					>
 						<Trash2 className="text-stone-400" /> Delete
 					</Button>
 				</div>
