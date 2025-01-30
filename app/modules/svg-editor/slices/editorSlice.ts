@@ -49,7 +49,21 @@ const editorSlice = createSlice({
 			state.edges = [...state.edges, action.payload];
 		},
 		removeEdge: (state, action: PayloadAction<string>) => {
-			state.edges = state.edges.filter((e) => e.id != action.payload);
+			state.edges = state.edges.filter((e) => e.id !== action.payload);
+		},
+		removeDangledEdges: (state, action: PayloadAction<number>) => {
+			const neighbors =
+				state.vertices.find((v) => v.id === action.payload)
+					?.neighbors ?? [];
+			const edgesToRemove = new Set();
+			for (const neighborId of neighbors) {
+				const edgeId = `${Math.min(
+					neighborId,
+					action.payload
+				)}-${Math.max(neighborId, action.payload)}`;
+				edgesToRemove.add(edgeId);
+			}
+			state.edges = state.edges.filter((e) => !edgesToRemove.has(e.id));
 		},
 	},
 });

@@ -20,15 +20,15 @@ import { offset, padding } from "./constants/constant";
 import editorSlice from "./slices/editorSlice";
 
 export default function SVGEditor({ preData }: { preData: SvgEditorData }) {
+	/* Following 2 lines could be removed, not using as this moment */
 	const { data, g, e, maxId } = preData;
+	const graph = useMap<number, Vertex>(Array.from(g.entries()));
 
 	const { cursorMode, vertices, edges, nextVertexId } = useAppSelector(
 		(state: RootState) => state.editor
 	);
 
 	const dispatch = useAppDispatch();
-
-	const graph = useMap<number, Vertex>(Array.from(g.entries()));
 
 	const edgesSet = useSet<string>(
 		edges.map((e) => `${Math.min(e.uId, e.vId)}-${Math.max(e.uId, e.vId)}`)
@@ -93,6 +93,8 @@ export default function SVGEditor({ preData }: { preData: SvgEditorData }) {
 		event.stopPropagation();
 		if (!highlightedElement || highlightedElement.type !== "node") return;
 		const targetNodeId = highlightedElement.id as number;
+
+		dispatch(editorSlice.actions.removeDangledEdges(targetNodeId));
 		dispatch(editorSlice.actions.removeVertex(targetNodeId));
 	};
 
@@ -272,21 +274,42 @@ export default function SVGEditor({ preData }: { preData: SvgEditorData }) {
 					const sourceNodeId = highlightedElement.id;
 					if (typeof sourceNodeId !== "number") return;
 
-					if (
-						!edgesSet.has(`${d.id}-${sourceNodeId}`) &&
-						!edgesSet.has(`${sourceNodeId}-${d.id}`)
-					) {
-						// const newEdge = `${d.id}-${sourceNodeId}`;
-						const newEdgeId = `${Math.min(d.id, sourceNodeId)}-${
-							(Math.max(d.id), sourceNodeId)
-						}`;
+					const newEdgeId = `${Math.min(
+						d.id,
+						sourceNodeId
+					)}-${Math.max(d.id, sourceNodeId)}`;
+
+					if (!edgesSet.has(newEdgeId)) {
 						edgesSet.add(newEdgeId);
 						const newEdge: Edge = {
 							id: newEdgeId,
 							uId: Math.min(d.id, sourceNodeId),
 							vId: Math.max(d.id, sourceNodeId),
 						};
-						
+
+						dispatch(
+							editorSlice.actions.setVertices(
+								vertices.map((v) => {
+									if (v.id === sourceNodeId) {
+										return {
+											...v,
+											neighbors: [...v.neighbors, d.id],
+										};
+									} else if (v.id === d.id) {
+										return {
+											...v,
+											neighbors: [
+												...v.neighbors,
+												sourceNodeId,
+											],
+										};
+									} else {
+										return v;
+									}
+								})
+							)
+						);
+
 						dispatch(
 							editorSlice.actions.setEdges([...edges, newEdge])
 						);
