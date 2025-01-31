@@ -89,10 +89,20 @@ export default function SVGEditor({ preData }: { preData: SvgEditorData }) {
 	const handleDeleteVertex = (event: React.MouseEvent<HTMLButtonElement>) => {
 		event.stopPropagation();
 		if (!highlightedElement || highlightedElement.type !== "node") return;
-		const targetNodeId = highlightedElement.id as number;
+		const targetNodeId = highlightedElement.id;
 
-		dispatch(editorSlice.actions.removeDangledEdges(targetNodeId));
+		// need to first remove connected edges, then remove the vertex
+		dispatch(editorSlice.actions.removeConnectedEdges(targetNodeId));
 		dispatch(editorSlice.actions.removeVertex(targetNodeId));
+	};
+
+	const handleDeleteEdge = (event: React.MouseEvent<HTMLButtonElement>) => {
+		event.stopPropagation();
+		if (!highlightedElement || highlightedElement.type !== "edge") return;
+		const targetEdgeId = highlightedElement.id;
+
+		edgesSet.delete(targetEdgeId);
+		dispatch(editorSlice.actions.removeEdge(targetEdgeId));
 	};
 
 	const dragStarted = (event: d3.D3DragEvent<Element, Vertex, unknown>) => {
@@ -465,6 +475,25 @@ export default function SVGEditor({ preData }: { preData: SvgEditorData }) {
 					/>
 					<Button
 						onClick={handleDeleteVertex}
+						variant="ghost"
+						className="text-stone-400"
+					>
+						<Trash2 className="text-stone-400" /> Delete
+					</Button>
+				</div>
+			)}
+
+			{isEdgeSelected && (
+				<div className="absolute border-2 border-stone-300 bottom-1 left-1/2 -translate-x-1/2 h-[50px] rounded-lg flex items-center justify-between gap-2 px-4">
+					<Button variant="ghost" className="text-stone-400">
+						<Palette className="text-stone-400" /> Color
+					</Button>
+					<Separator
+						orientation="vertical"
+						className="h-[60%] bg-stone-300"
+					/>
+					<Button
+						onClick={handleDeleteEdge}
 						variant="ghost"
 						className="text-stone-400"
 					>
