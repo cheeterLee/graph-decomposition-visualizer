@@ -24,24 +24,21 @@ export default function SVGEditor({ preData }: { preData: SvgEditorData }) {
 	const { data, g, e, maxId } = preData;
 	const graph = useMap<number, Vertex>(Array.from(g.entries()));
 
-	const { cursorMode, vertices, edges, nextVertexId } = useAppSelector(
-		(state: RootState) => state.editor
-	);
+	const {
+		cursorMode,
+		vertices,
+		edges,
+		nextVertexId,
+		isAddEdgeMode,
+		highlightedElement,
+	} = useAppSelector((state: RootState) => state.editor);
 
 	const dispatch = useAppDispatch();
 
-	const edgesSet = useSet<string>(
-		edges.map((e) => `${Math.min(e.uId, e.vId)}-${Math.max(e.uId, e.vId)}`)
-	);
-
-	const [highlightedElement, setHighlightedElement] = React.useState<{
-		type: "node" | "edge";
-		id: number | string; // For nodes, use the node ID; for edges, use a string like '1-2'
-	} | null>(null);
-
-	const [isAddEdgeMode, setIsAddEdgeMode] = React.useState<boolean>(false);
+	const edgesSet = useSet<string>();
 
 	const isNodeSelected = highlightedElement?.type === "node";
+	const isEdgeSelected = highlightedElement?.type === "edge";
 
 	const svgContainerRef = React.useRef<HTMLDivElement | null>(null);
 
@@ -86,7 +83,7 @@ export default function SVGEditor({ preData }: { preData: SvgEditorData }) {
 	const handleAddEdge = (event: React.MouseEvent<HTMLButtonElement>) => {
 		event.stopPropagation();
 		if (!highlightedElement || highlightedElement.type !== "node") return;
-		setIsAddEdgeMode(true);
+		dispatch(editorSlice.actions.enterAddEdgeMode());
 	};
 
 	const handleDeleteVertex = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -207,7 +204,6 @@ export default function SVGEditor({ preData }: { preData: SvgEditorData }) {
 			.attr("stroke-width", 3)
 			.on("click", function (event: MouseEvent, d) {
 				event.stopPropagation();
-				// const edgeKey = `${d[0]}-${d[1]}`;
 				const edgeKey = `${Math.min(d.uId, d.vId)}-${Math.max(
 					d.uId,
 					d.vId
@@ -216,9 +212,14 @@ export default function SVGEditor({ preData }: { preData: SvgEditorData }) {
 					highlightedElement?.type === "edge" &&
 					highlightedElement.id === edgeKey
 				) {
-					setHighlightedElement(null);
+					dispatch(editorSlice.actions.setHighlightedElement(null));
 				} else {
-					setHighlightedElement({ type: "edge", id: edgeKey });
+					dispatch(
+						editorSlice.actions.setHighlightedElement({
+							type: "edge",
+							id: edgeKey,
+						})
+					);
 				}
 			})
 			.classed(
@@ -315,8 +316,8 @@ export default function SVGEditor({ preData }: { preData: SvgEditorData }) {
 						);
 					}
 
-					setIsAddEdgeMode(false);
-					setHighlightedElement(null);
+					dispatch(editorSlice.actions.exitAddEdgeMode());
+					dispatch(editorSlice.actions.setHighlightedElement(null));
 					return;
 				}
 
@@ -324,13 +325,15 @@ export default function SVGEditor({ preData }: { preData: SvgEditorData }) {
 					highlightedElement?.type === "node" &&
 					highlightedElement.id === d.id
 				) {
-					setHighlightedElement(null);
-					setIsAddEdgeMode(false);
+					dispatch(editorSlice.actions.setHighlightedElement(null));
+					dispatch(editorSlice.actions.exitAddEdgeMode());
 				} else {
-					setHighlightedElement({
-						type: "node",
-						id: d.id,
-					});
+					dispatch(
+						editorSlice.actions.setHighlightedElement({
+							type: "node",
+							id: d.id,
+						})
+					);
 				}
 			})
 			.classed(

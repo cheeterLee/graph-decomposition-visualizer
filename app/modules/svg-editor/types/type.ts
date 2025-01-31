@@ -19,3 +19,11 @@ export type SvgEditorData = {
 };
 
 export type CursorMode = "pointer" | "grab";
+
+export type HighlightedElement =
+	| {
+			type: "node";
+			id: number;
+	  }
+	| { type: "edge"; id: string }
+	| null;

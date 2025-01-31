@@ -1,17 +1,21 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
-import { CursorMode, Edge, Vertex } from "../types/type";
+import { CursorMode, Edge, Vertex, HighlightedElement } from "../types/type";
 
 export interface EditorState {
 	nextVertexId: number;
 	cursorMode: CursorMode;
+	isAddEdgeMode: boolean;
 	vertices: Vertex[];
 	edges: Edge[];
+	highlightedElement: HighlightedElement;
 }
 
 const initialState: EditorState = {
 	nextVertexId: 1,
 	cursorMode: "pointer",
+	isAddEdgeMode: false,
+	highlightedElement: null,
 	vertices: [],
 	edges: [],
 };
@@ -20,6 +24,20 @@ const editorSlice = createSlice({
 	name: "editor",
 	initialState: initialState,
 	reducers: {
+		/* ui state reducers */
+		enterAddEdgeMode: (state, action: PayloadAction<void>) => {
+			state.isAddEdgeMode = true;
+		},
+		exitAddEdgeMode: (state, action: PayloadAction<void>) => {
+			state.isAddEdgeMode = false;
+		},
+		setHighlightedElement: (
+			state,
+			action: PayloadAction<HighlightedElement>
+		) => {
+			state.highlightedElement = action.payload;
+		},
+
 		/* widget reducers */
 		switchCursorMode: (state, action: PayloadAction<CursorMode>) => {
 			state.cursorMode = action.payload;
