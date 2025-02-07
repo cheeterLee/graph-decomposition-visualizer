@@ -3,9 +3,9 @@ import { useLoaderData } from "@remix-run/react";
 import { populateDefaultGraphData } from "~/data/dataPopulation";
 import { useAppDispatch } from "~/hooks/reduxHooks";
 
-import CodeSnippet from "~/modules/algorithm-runner/CodeSnippet";
 import editorSlice from "~/modules/svg-editor/slices/editorSlice";
 import SVGEditor from "~/modules/svg-editor/SvgEditor";
+import AlgorithmRunner from "~/modules/algorithm-runner/AlgorithmRunner";
 
 export const meta: MetaFunction = () => {
 	return [
@@ -37,13 +37,7 @@ export default function Index() {
 			className="flex items-center justify-center gap-1 w-screen xl:px-16 lg:px-10 px-4 min-h-screen"
 		>
 			<SVGEditor preData={data} />
-
-			<div className="grid grid-rows-3 gap-1 w-[500px] h-[700px] rounded-lg">
-				<div className="border-2 border-stone-300 w-full row-span-2 rounded-lg overflow-scroll">
-					<CodeSnippet />
-				</div>
-				<div className="border-2 border-stone-300 w-full row-span-1 rounded-lg"></div>
-			</div>
+			<AlgorithmRunner />
 		</main>
 	);
 }
