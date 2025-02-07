@@ -2,50 +2,31 @@ import React from "react";
 import { Button } from "~/components/ui/button";
 import CodeSnippet from "./components/CodeSnippet";
 
-import createTreeWidthAlgoModule from "./wasm/wasmTreeWidthAgo";
+import createTreeWidthAlgoModule from "./wasm/wasmTreeWidthAlgo";
 
 export default function AlgorithmRunner() {
 	const handleRunCode = (event: React.MouseEvent<HTMLButtonElement>) => {
 		event.stopPropagation();
-        console.log('running code')
-		createTreeWidthAlgoModule().then(({ runTreeWidth }) => {
-			const total_nodes = 11;
-			const total_edges = 20;
-			const nodes = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
-			const edges = [
-				"1-2",
-				"1-4",
-				"1-5",
-				"1-6",
-				"1-7",
-				"2-3",
-				"2-9",
-				"4-8",
-				"4-10",
-				"5-9",
-				"5-11",
-				"6-3",
-				"6-10",
-				"7-8",
-				"7-11",
-				"8-3",
-				"8-9",
-				"9-10",
-				"10-11",
-				"11-3",
-			];
-			try {
-				const res = runTreeWidth(
-					total_nodes,
-					total_edges,
-					nodes,
-					edges
-				);
-				console.log("res", res);
-			} catch (e) {
-				console.log(e);
+		console.log("running code");
+
+		const worker = new Worker(
+			new URL("/web-workers/algoWorker.js", import.meta.url),
+			{
+				type: "module",
 			}
+		);
+
+		worker.postMessage({
+			type: "RUN_TREE_WIDTH",
+			payload: {},
 		});
+
+		worker.onmessage = function (message) {
+			if (message.data.type === "RESULT") {
+				const res = message.data.payload.res;
+				console.log("res in main thread", res);
+			}
+		};
 	};
 
 	return (
