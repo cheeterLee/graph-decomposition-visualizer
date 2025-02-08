@@ -19,10 +19,10 @@ import type { RootState } from "~/store";
 import { offset, padding } from "./constants/constant";
 import editorSlice from "./slices/editorSlice";
 
-export default function SVGEditor({ preData }: { preData: SvgEditorData }) {
+export default function SVGEditor() {
 	/* Following 2 lines could be removed, not using as this moment */
-	const { data, g, e, maxId } = preData;
-	const graph = useMap<number, Vertex>(Array.from(g.entries()));
+	// const { data, g, e, maxId } = preData;
+	// const graph = useMap<number, Vertex>(Array.from(g.entries()));
 
 	const {
 		cursorMode,
