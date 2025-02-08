@@ -1,13 +1,24 @@
 import React from "react";
 import { Button } from "~/components/ui/button";
 import CodeSnippet from "./components/CodeSnippet";
-
-import createTreeWidthAlgoModule from "./wasm/wasmTreeWidthAlgo";
+import { useNavigate } from "@remix-run/react";
+import runnerSlice from "./slices/runnerSlice";
+import { useAppDispatch, useAppSelector } from "~/hooks/reduxHooks";
+import type { RootState } from "~/store";
+import { Loader2 } from "lucide-react";
 
 export default function AlgorithmRunner() {
+	const { isRunning } = useAppSelector((state: RootState) => state.runner);
+	console.log(isRunning);
+
+	const dispatch = useAppDispatch();
+
+	const navigate = useNavigate();
+
 	const handleRunCode = (event: React.MouseEvent<HTMLButtonElement>) => {
 		event.stopPropagation();
-		console.log("running code");
+
+		dispatch(runnerSlice.actions.setIsRunning(true));
 
 		const worker = new Worker(
 			new URL("/web-workers/algoWorker.js", import.meta.url),
@@ -24,8 +35,10 @@ export default function AlgorithmRunner() {
 		worker.onmessage = function (message) {
 			if (message.data.type === "RESULT") {
 				const res = message.data.payload.res;
+				navigate("result");
 				console.log("res in main thread", res);
 			}
+			dispatch(runnerSlice.actions.setIsRunning(false));
 		};
 	};
 
@@ -37,9 +50,11 @@ export default function AlgorithmRunner() {
 				</div>
 				<Button
 					onClick={handleRunCode}
+					disabled={isRunning}
 					className="bg-stone-700 hover:bg-stone-500
                 text-stone-50  absolute right-2 bottom-2"
 				>
+					{isRunning && <Loader2 className="animate-spin" />}
 					Run Code
 				</Button>
 			</div>
