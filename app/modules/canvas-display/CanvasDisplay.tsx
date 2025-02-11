@@ -57,7 +57,9 @@ export default function CanvasDisplay() {
 		dispatch(displaySlice.actions.setIsViewRawMode(false));
 	};
 
-	const handleCopyRawData = () => {};
+	const handleCopyRawData = () => {
+		window.navigator.clipboard.writeText(rawData);
+	};
 
 	React.useEffect(() => {
 		const canvas = canvasRef.current;
