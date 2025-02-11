@@ -1,4 +1,5 @@
+import CanvasDisplay from "~/modules/canvas-display/CanvasDisplay";
 
 export default function Result() {
-    return <div>result</div>
+	return <CanvasDisplay />;
 }

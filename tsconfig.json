@@ -8,7 +8,8 @@
 		"**/.server/**/*.tsx",
 		"**/.client/**/*.ts",
 		"**/.client/**/*.tsx",
-		"public/web-workers/algoWorker.js"
+		"public/web-workers/algoWorker.js",
+		"app/modules/algorithm-runner/wasm/wasmTreeWidthAlgo.js"
 	],
 	"compilerOptions": {
 		"module": "ES2022",

@@ -1,15 +1,17 @@
 import React from "react";
 import { Button } from "~/components/ui/button";
 import CodeSnippet from "./components/CodeSnippet";
-import { useNavigate } from "@remix-run/react";
+import { Link, useNavigate } from "@remix-run/react";
 import runnerSlice from "./slices/runnerSlice";
 import { useAppDispatch, useAppSelector } from "~/hooks/reduxHooks";
 import type { RootState } from "~/store";
 import { Loader2 } from "lucide-react";
+import displaySlice from "../canvas-display/slices/displaySlice";
 
 export default function AlgorithmRunner() {
-	const { isRunning } = useAppSelector((state: RootState) => state.runner);
-	console.log(isRunning);
+	const { isRunning, hasResult } = useAppSelector(
+		(state: RootState) => state.runner
+	);
 
 	const dispatch = useAppDispatch();
 
@@ -34,29 +36,49 @@ export default function AlgorithmRunner() {
 
 		worker.onmessage = function (message) {
 			if (message.data.type === "RESULT") {
-				const res = message.data.payload.res;
-				navigate("result");
+				const res: {
+					bags: Array<number[]>;
+					edges: Array<[number, number]>;
+				} = message.data.payload.res;
 				console.log("res in main thread", res);
+
+				dispatch(displaySlice.actions.setBags(res.bags));
+				dispatch(displaySlice.actions.setEdges(res.edges));
+				dispatch(displaySlice.actions.setNodes());
+				dispatch(runnerSlice.actions.setHasResult(true));
+				navigate("result");
 			}
 			dispatch(runnerSlice.actions.setIsRunning(false));
 		};
 	};
 
 	return (
-		<div className="grid grid-rows-3 gap-1 w-[500px] h-[700px] rounded-lg">
+		<div className="grid grid-rows-3 gap-1 flex-1 h-[700px] rounded-lg">
 			<div className="relative border-2 border-stone-300 w-full row-span-2 rounded-lg">
 				<div className="max-w-full max-h-full overflow-scroll">
 					<CodeSnippet />
 				</div>
-				<Button
-					onClick={handleRunCode}
-					disabled={isRunning}
-					className="bg-stone-700 hover:bg-stone-500
-                text-stone-50  absolute right-2 bottom-2"
-				>
-					{isRunning && <Loader2 className="animate-spin" />}
-					Run Code
-				</Button>
+				<div className="absolute bottom-1 right-10 flex items-center gap-1">
+					{hasResult && (
+						<Button
+							asChild
+							className="bg-stone-700 hover:bg-stone-500
+                text-stone-50"
+						>
+							<Link to="/app/result">Show Result</Link>
+						</Button>
+					)}
+
+					<Button
+						onClick={handleRunCode}
+						disabled={isRunning}
+						className="bg-stone-700 hover:bg-stone-500
+                text-stone-50"
+					>
+						{isRunning && <Loader2 className="animate-spin" />}
+						Run Code
+					</Button>
+				</div>
 			</div>
 			<div className="border-2 border-stone-300 w-full row-span-1 rounded-lg"></div>
 		</div>
