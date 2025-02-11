@@ -5,12 +5,16 @@ export interface DisplayState {
 	bags: Array<[number, number[]]>;
 	edges: Array<[number, number]>;
 	nodes: Array<number>;
+	isViewRawMode: boolean;
+	rawData: string;
 }
 
 const initialState: DisplayState = {
 	bags: [],
 	edges: [],
 	nodes: [],
+	isViewRawMode: false,
+	rawData: "",
 };
 
 const displaySlice = createSlice({
@@ -32,6 +36,30 @@ const displaySlice = createSlice({
 		},
 		setEdges: (state, action: PayloadAction<[number, number][]>) => {
 			state.edges = action.payload;
+		},
+		setIsViewRawMode: (state, action: PayloadAction<boolean>) => {
+			state.isViewRawMode = action.payload;
+		},
+		flushRawData: (state, action: PayloadAction<void>) => {
+			// build the text content.
+			let content = "";
+			let maxBagSize = 0;
+
+			state.bags.forEach(([bagId, nodes]) => {
+				content += `b ${bagId} ${nodes.join(" ")}\n`;
+				maxBagSize = Math.max(maxBagSize, nodes.length);
+			});
+
+			// Write out the edges information.
+			state.edges.forEach(([bagA, bagB]) => {
+				content += `${bagA} ${bagB}\n`;
+			});
+
+			content =
+				`s td ${state.bags.length} ${maxBagSize} ${state.nodes.length}\n` +
+				content;
+
+			state.rawData = content;
 		},
 	},
 });

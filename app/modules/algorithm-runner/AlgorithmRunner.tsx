@@ -45,7 +45,9 @@ export default function AlgorithmRunner() {
 				dispatch(displaySlice.actions.setBags(res.bags));
 				dispatch(displaySlice.actions.setEdges(res.edges));
 				dispatch(displaySlice.actions.setNodes());
+				dispatch(displaySlice.actions.flushRawData());
 				dispatch(runnerSlice.actions.setHasResult(true));
+
 				navigate("result");
 			}
 			dispatch(runnerSlice.actions.setIsRunning(false));

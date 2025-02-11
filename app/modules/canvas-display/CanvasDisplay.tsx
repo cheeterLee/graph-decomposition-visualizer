@@ -1,9 +1,10 @@
 import React from "react";
-import { useAppSelector } from "~/hooks/reduxHooks";
+import { useAppDispatch, useAppSelector } from "~/hooks/reduxHooks";
 import * as d3 from "d3";
 import { Button } from "~/components/ui/button";
-import { ChevronLeft, Download, FileText } from "lucide-react";
+import { ChevronLeft, Copy, Download, Eclipse, FileText } from "lucide-react";
 import { Link } from "@remix-run/react";
+import displaySlice from "./slices/displaySlice";
 
 // Define a node type used by the simulation.
 interface NodeDatum {
@@ -23,45 +24,40 @@ interface LinkDatum {
 }
 
 export default function CanvasDisplay() {
-	const { bags, edges } = useAppSelector((state) => state.display);
+	const { bags, edges, isViewRawMode, rawData } = useAppSelector(
+		(state) => state.display
+	);
+
+	const dispatch = useAppDispatch();
 
 	const canvasRef = React.useRef<HTMLCanvasElement>(null);
 
-	const handleExport = () => {
-		// Build the text content.
-		let content = "";
+	const handleDownload = () => {
+		// create a Blob with the content, specifying the MIME type.
+		const blob = new Blob([rawData], { type: "text/plain;charset=utf-8" });
 
-		// Write out the bags information.
-		content += "Bags:\n";
-		bags.forEach(([bagId, nodes]) => {
-			content += `Bag ID: ${bagId}, Nodes: [${nodes.join(", ")}]\n`;
-		});
-
-		// Write out the edges information.
-		content += "\nEdges:\n";
-		edges.forEach(([bagA, bagB]) => {
-			content += `Edge between Bag ${bagA} and Bag ${bagB}\n`;
-		});
-
-		// Create a Blob with the content, specifying the MIME type.
-		const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
-
-		// Create an object URL and a temporary link element to trigger the download.
+		// create an object URL and a temporary link element to trigger the download.
 		const url = window.URL.createObjectURL(blob);
 		const link = document.createElement("a");
 		link.href = url;
-		link.download = "data.txt";
+		link.download = "decomposed.td";
 
-		// Append the link to the document, trigger a click, and then clean up.
+		// append the link to the document, trigger a click, and then clean up.
 		document.body.appendChild(link);
 		link.click();
 		document.body.removeChild(link);
 		window.URL.revokeObjectURL(url);
 	};
 
-	const handleDownload = () => {
-		handleExport();
+	const handleViewRaw = () => {
+		dispatch(displaySlice.actions.setIsViewRawMode(true));
 	};
+
+	const handleViewGraph = () => {
+		dispatch(displaySlice.actions.setIsViewRawMode(false));
+	};
+
+	const handleCopyRawData = () => {};
 
 	React.useEffect(() => {
 		const canvas = canvasRef.current;
@@ -148,7 +144,7 @@ export default function CanvasDisplay() {
 		return () => {
 			simulation.stop();
 		};
-	}, [bags, edges]);
+	}, [bags, edges, isViewRawMode]);
 
 	return (
 		<div className="relative border-2 border-stone-300 flex-1 h-[700px] rounded-lg">
@@ -160,22 +156,57 @@ export default function CanvasDisplay() {
 					</Link>
 				</Button>
 				<div className="flex items-center gap-1">
-					<Button variant="outline" className="text-stone-400">
-						<FileText className="text-stone-400" />
-						View Raw
-					</Button>
+					{isViewRawMode ? (
+						<Button
+							onClick={handleViewGraph}
+							variant="outline"
+							className="text-stone-400"
+						>
+							<Eclipse className="text-stone-400" />
+							View Graph
+						</Button>
+					) : (
+						<Button
+							onClick={handleViewRaw}
+							variant="outline"
+							className="text-stone-400"
+						>
+							<FileText className="text-stone-400" />
+							View Raw
+						</Button>
+					)}
+
 					<Button
 						onClick={handleDownload}
 						variant="outline"
 						className="text-stone-400"
 					>
 						<Download className="text-stone-400" />
-						Download Result
+						Download Raw Result
 					</Button>
 				</div>
 			</div>
 
-			<canvas ref={canvasRef} className="w-full h-full" />
+			{isViewRawMode ? (
+				<div className="w-full h-full flex items-center justify-center">
+					<div className="w-1/2 h-1/2 relative overflow-scroll border-2 border-stone-200 rounded-lg 
+					py-4 px-6 shadow-sm">
+						<Button
+							onClick={handleCopyRawData}
+							variant="outline"
+							className="absolute top-1 right-1"
+							size="icon"
+						>
+							<Copy className="text-stone-400" />
+						</Button>
+						<p className="whitespace-pre font-mono text-stone-500">
+							{rawData}
+						</p>
+					</div>
+				</div>
+			) : (
+				<canvas ref={canvasRef} className="w-full h-full" />
+			)}
 		</div>
 	);
 }
