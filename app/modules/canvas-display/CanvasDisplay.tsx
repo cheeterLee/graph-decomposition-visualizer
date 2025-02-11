@@ -2,7 +2,7 @@ import React from "react";
 import { useAppSelector } from "~/hooks/reduxHooks";
 import * as d3 from "d3";
 import { Button } from "~/components/ui/button";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Download } from "lucide-react";
 import { Link } from "@remix-run/react";
 
 // Define a node type used by the simulation.
@@ -116,16 +116,19 @@ export default function CanvasDisplay() {
 
 	return (
 		<div className="relative border-2 border-stone-300 flex-1 h-[700px] rounded-lg">
-			<Button
-				asChild
-				variant="outline"
-				className="absolute top-1 left-1 text-stone-400"
-			>
-				<Link to="/app">
-					<ChevronLeft className="text-stone-400" />
-					Back
-				</Link>
-			</Button>
+			<div className="absolute w-full top-1 px-2 flex items-center justify-between">
+				<Button asChild variant="outline" className="text-stone-400">
+					<Link to="/app">
+						<ChevronLeft className="text-stone-400" />
+						Back
+					</Link>
+				</Button>
+				<Button variant="outline" className="text-stone-400">
+					<Download className="text-stone-400" />
+					Download Result
+				</Button>
+			</div>
+
 			<canvas ref={canvasRef} className="w-full h-full" />
 		</div>
 	);

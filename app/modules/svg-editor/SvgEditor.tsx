@@ -56,6 +56,7 @@ export default function SVGEditor() {
 		dispatch(editorSlice.actions.setVertices([]));
 		dispatch(editorSlice.actions.setNextVertexId(1));
 		dispatch(editorSlice.actions.setEdges([]));
+		edgesSet.clear();
 	};
 
 	const handleAddVertex = () => {
