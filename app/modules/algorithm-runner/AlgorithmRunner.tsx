@@ -50,6 +50,12 @@ export default function AlgorithmRunner() {
 			}
 			dispatch(runnerSlice.actions.setIsRunning(false));
 		};
+
+		worker.onerror = (error) => {
+			console.error("Worker error:", error);
+			dispatch(runnerSlice.actions.setIsRunning(false));
+			worker.terminate();
+		};
 	};
 
 	return (

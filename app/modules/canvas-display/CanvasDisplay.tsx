@@ -2,7 +2,7 @@ import React from "react";
 import { useAppSelector } from "~/hooks/reduxHooks";
 import * as d3 from "d3";
 import { Button } from "~/components/ui/button";
-import { ChevronLeft, Download } from "lucide-react";
+import { ChevronLeft, Download, FileText } from "lucide-react";
 import { Link } from "@remix-run/react";
 
 // Define a node type used by the simulation.
@@ -26,6 +26,42 @@ export default function CanvasDisplay() {
 	const { bags, edges } = useAppSelector((state) => state.display);
 
 	const canvasRef = React.useRef<HTMLCanvasElement>(null);
+
+	const handleExport = () => {
+		// Build the text content.
+		let content = "";
+
+		// Write out the bags information.
+		content += "Bags:\n";
+		bags.forEach(([bagId, nodes]) => {
+			content += `Bag ID: ${bagId}, Nodes: [${nodes.join(", ")}]\n`;
+		});
+
+		// Write out the edges information.
+		content += "\nEdges:\n";
+		edges.forEach(([bagA, bagB]) => {
+			content += `Edge between Bag ${bagA} and Bag ${bagB}\n`;
+		});
+
+		// Create a Blob with the content, specifying the MIME type.
+		const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+
+		// Create an object URL and a temporary link element to trigger the download.
+		const url = window.URL.createObjectURL(blob);
+		const link = document.createElement("a");
+		link.href = url;
+		link.download = "data.txt";
+
+		// Append the link to the document, trigger a click, and then clean up.
+		document.body.appendChild(link);
+		link.click();
+		document.body.removeChild(link);
+		window.URL.revokeObjectURL(url);
+	};
+
+	const handleDownload = () => {
+		handleExport();
+	};
 
 	React.useEffect(() => {
 		const canvas = canvasRef.current;
@@ -123,10 +159,20 @@ export default function CanvasDisplay() {
 						Back
 					</Link>
 				</Button>
-				<Button variant="outline" className="text-stone-400">
-					<Download className="text-stone-400" />
-					Download Result
-				</Button>
+				<div className="flex items-center gap-1">
+					<Button variant="outline" className="text-stone-400">
+						<FileText className="text-stone-400" />
+						View Raw
+					</Button>
+					<Button
+						onClick={handleDownload}
+						variant="outline"
+						className="text-stone-400"
+					>
+						<Download className="text-stone-400" />
+						Download Result
+					</Button>
+				</div>
 			</div>
 
 			<canvas ref={canvasRef} className="w-full h-full" />
