@@ -1,3 +1,5 @@
+import { SimulationLinkDatum, SimulationNodeDatum } from "d3";
+
 export type Vertex = {
 	id: number;
 	cx: number;
@@ -10,6 +12,12 @@ export type Edge = {
 	uId: number;
 	vId: number;
 };
+
+export interface SimNode extends SimulationNodeDatum {
+	id: number
+}
+
+export interface SimLink extends SimulationLinkDatum<SimNode> {}
 
 export type SvgEditorData = {
 	data: Vertex[];

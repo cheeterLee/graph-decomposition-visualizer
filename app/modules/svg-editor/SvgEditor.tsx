@@ -26,7 +26,7 @@ import {
 	Spline,
 	Upload,
 } from "lucide-react";
-import { Edge, SvgEditorData, Vertex } from "./types/type";
+import { Edge, SimLink, SimNode, SvgEditorData, Vertex } from "./types/type";
 import type { RootState } from "~/store";
 import { offset, padding } from "./constants/constant";
 import editorSlice from "./slices/editorSlice";
@@ -253,9 +253,141 @@ export default function SVGEditor() {
 
 	const handleFileSubmit = () => {
 		const uploadedGraph = parseGraph(rawData);
-		console.log(uploadedGraph);
+		console.log("uploaded graph", uploadedGraph);
 
 		// TODO: generate force graph data
+		if (!svgContainerRef.current) return;
+
+		const svgRect = svgContainerRef.current.getBoundingClientRect();
+		const width = svgRect.width;
+		const height = svgRect.height;
+
+		const simulationNodes: SimNode[] = Array.from(
+			uploadedGraph.nodes,
+			(val, i) => ({
+				index: i, // d3 internally overwrites it, kinda hack around it here
+				id: val,
+			})
+		);
+		const simulationLinks = Array.from(uploadedGraph.edges, (pair) => ({
+			source: pair[0],
+			target: pair[1],
+		}));
+
+		// console.log("sim nodes", simulationNodes);
+		// console.log("sim links", simulationLinks);
+
+		function boundingForce() {
+			let nodes: SimNode[] = [];
+			let width: number, height: number;
+
+			function force(alpha: number) {
+				nodes.forEach((node) => {
+					// Clamp node.x and node.y to be within [0, width] and [0, height]
+					node.x = Math.max(10, Math.min(width, node.x!));
+					node.y = Math.max(10, Math.min(height, node.y!));
+				});
+			}
+
+			// Called by D3 to initialize the force.
+			force.initialize = (n: SimNode[]) => {
+				console.log("force initialized");
+				nodes = n;
+				// Update the dimensions in case the container size changed
+				const svgRect =
+					svgContainerRef.current!.getBoundingClientRect();
+				width = svgRect.width;
+				height = svgRect.height;
+			};
+
+			return force;
+		}
+
+
+		const simulation = d3
+			.forceSimulation<SimNode>(simulationNodes)
+			.force(
+				"link",
+				d3
+					.forceLink<SimNode, SimLink>(simulationLinks)
+					.id((v) => v.id)
+					.distance(20)
+					.strength(1)
+					.iterations(10)
+			)
+			.force("charge", d3.forceManyBody().strength(-30))
+			.force("center", d3.forceCenter(width / 2, height / 2))
+			.force("collide", d3.forceCollide(60))
+			.force("bounding", boundingForce())
+			.stop();
+
+		simulation.tick(
+			Math.ceil(
+				Math.log(simulation.alphaMin()) /
+					Math.log(1 - simulation.alphaDecay())
+			)
+		);
+
+		console.log("=====================");
+		console.log("sim nodes", simulationNodes);
+		console.log("sim links", simulationLinks);
+
+		const generatedSimulationState = generateSimulationGraphState(
+			simulationNodes,
+			simulationLinks
+		);
+
+		dispatch(
+			editorSlice.actions.setVertices(generatedSimulationState.vertices)
+		);
+		dispatch(editorSlice.actions.setEdges(generatedSimulationState.edges));
+		dispatch(
+			editorSlice.actions.setNextVertexId(
+				generatedSimulationState.maxNodeId + 1
+			)
+		);
+	};
+
+	const generateSimulationGraphState = (
+		simulationNodes: SimNode[],
+		simulationLinks: SimLink[]
+	): { vertices: Vertex[]; edges: Edge[]; maxNodeId: number } => {
+		const map = new Map<number, number[]>();
+		const edges: Edge[] = [];
+		for (const e of simulationLinks) {
+			const sourceId = (e.source as SimNode).id;
+			const targetId = (e.target as SimNode).id;
+			if (!map.has(sourceId)) {
+				map.set(sourceId, [targetId]);
+			} else {
+				map.get(sourceId)?.push(targetId);
+			}
+			if (!map.has(targetId)) {
+				map.set(targetId, [sourceId]);
+			} else {
+				map.get(targetId)?.push(sourceId);
+			}
+			const newEdge: Edge = {
+				id: `${sourceId}-${targetId}`,
+				uId: sourceId,
+				vId: targetId,
+			};
+			edges.push(newEdge);
+		}
+		const vertices: Vertex[] = [];
+		let maxNodeId = 0;
+		for (const v of simulationNodes) {
+			const neighbors = map.get(v.id) ?? [];
+			const newVertex: Vertex = {
+				id: v.id,
+				cx: v.x ?? 0,
+				cy: v.y ?? 0,
+				neighbors: [...neighbors],
+			};
+			maxNodeId = Math.max(maxNodeId, v.id);
+			vertices.push(newVertex);
+		}
+		return { vertices, edges, maxNodeId };
 	};
 
 	// Effect runs on initial mount to draw SVG
