@@ -5,6 +5,17 @@ import { useMap } from "~/hooks/useMap";
 import { useAppSelector, useAppDispatch } from "~/hooks/reduxHooks";
 import { Button } from "~/components/ui/button";
 import { Separator } from "~/components/ui/separator";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+	DialogTrigger,
+} from "~/components/ui/dialog";
 import {
 	Grab,
 	MousePointer2,
@@ -13,6 +24,7 @@ import {
 	Palette,
 	Trash2,
 	Spline,
+	Upload,
 } from "lucide-react";
 import { Edge, SvgEditorData, Vertex } from "./types/type";
 import type { RootState } from "~/store";
@@ -51,6 +63,11 @@ export default function SVGEditor() {
 
 	const linksGroupRef = React.useRef<SVGGElement | null>(null);
 	const nodesGroupRef = React.useRef<SVGGElement | null>(null);
+
+	const [isRawMode, setIsRawMode] = React.useState<boolean>(false);
+	const [rawData, setRawData] = React.useState<string>("");
+	const [isFileUploadFinished, setIsFileUploadFinished] =
+		React.useState<boolean>(false);
 
 	const handleResetGraph = () => {
 		dispatch(editorSlice.actions.setVertices([]));
@@ -151,6 +168,94 @@ export default function SVGEditor() {
 
 		group.select("circle").attr("stroke", "#5f9ea0");
 		group.select("text").attr("stroke", "#5f9ea0");
+	};
+
+	const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+		const file = event.target.files?.[0];
+		if (!file) return;
+
+		const reader = new FileReader();
+
+		reader.onloadend = (event: ProgressEvent<FileReader>) => {
+			const text = event.target?.result;
+			if (typeof text === "string") {
+				console.log(text);
+				setRawData(text);
+			}
+			setIsFileUploadFinished(true);
+		};
+
+		reader.readAsText(file);
+	};
+
+	const parseGraph = (
+		fileContent: string
+	): { nodes: number[]; edges: [number, number][] } => {
+		const lines = fileContent.split("\n");
+		const nodesSet = new Set<number>();
+		const edgesSet = new Set<string>();
+		const edges: [number, number][] = [];
+
+		let expectedNodes = 0;
+		let expectedEdges = 0;
+
+		lines.forEach((line) => {
+			const trimmed = line.trim();
+
+			// skip empty and comment lines
+			if (!trimmed) return;
+			if (trimmed.startsWith("c")) return;
+
+			// If it's a header line, parse the expected numbers
+			if (trimmed.startsWith("p")) {
+				// Expected format: "p tw <nodes> <edges>"
+				const parts = trimmed.split(" ");
+				if (parts.length >= 4) {
+					expectedNodes = parseInt(parts[2], 10);
+					expectedEdges = parseInt(parts[3], 10);
+				}
+				return;
+			}
+
+			// Process the line as an edge (e.g. "1 2")
+			const parts = trimmed.split(" ");
+			if (parts.length >= 2) {
+				const a = parseInt(parts[0], 10);
+				const b = parseInt(parts[1], 10);
+
+				// Add both nodes to the set (this ensures uniqueness)
+				nodesSet.add(a);
+				nodesSet.add(b);
+
+				// Since the edge is undirected ("between 1 and 2"), we can sort the pair to avoid duplicates (1,2 === 2,1)
+				const sortedEdge: [number, number] = a < b ? [a, b] : [b, a];
+				const edgeKey = sortedEdge.join(",");
+
+				if (!edgesSet.has(edgeKey)) {
+					edgesSet.add(edgeKey);
+					edges.push(sortedEdge);
+				}
+			}
+		});
+
+		// Convert the node set to a sorted array of numbers
+		const nodes = Array.from(nodesSet).sort((a, b) => a - b);
+
+		if (nodes.length !== expectedNodes) {
+			console.error("Err: Incorrect nodes count in file");
+		}
+		if (edges.length !== expectedEdges) {
+			console.error("Err: Incorrect edges count in file");
+		}
+
+		return { nodes, edges };
+	};
+
+	const handleFileSubmit = () => {
+		const uploadedGraph = parseGraph(rawData);
+		console.log(uploadedGraph);
+
+		// TODO: generate force graph data
 	};
 
 	// Effect runs on initial mount to draw SVG
@@ -452,6 +557,42 @@ export default function SVGEditor() {
 				<Button onClick={handleResetGraph} variant="ghost" size="icon">
 					<RotateCcw className="text-stone-400" />
 				</Button>
+				<Separator
+					orientation="vertical"
+					className="h-[60%] bg-stone-300"
+				/>
+				<Dialog>
+					<DialogTrigger asChild>
+						<Button variant="ghost" size="icon">
+							<Upload className="text-stone-400" />
+						</Button>
+					</DialogTrigger>
+					<DialogContent className="sm:max-w-[425px]">
+						<DialogHeader>
+							<DialogTitle>Upload Graph File</DialogTitle>
+							<DialogDescription>
+								only .gr files are allowed.
+							</DialogDescription>
+						</DialogHeader>
+						<div className="grid gap-4 py-4">
+							{/* <Label htmlFor="picture">graph file(.gr)</Label> */}
+							<Input
+								id="picture"
+								type="file"
+								onChange={handleFileUpload}
+							/>
+						</div>
+						<DialogFooter>
+							<Button
+								disabled={!isFileUploadFinished}
+								onClick={handleFileSubmit}
+								type="submit"
+							>
+								Upload
+							</Button>
+						</DialogFooter>
+					</DialogContent>
+				</Dialog>
 			</div>
 
 			{isNodeSelected && (
