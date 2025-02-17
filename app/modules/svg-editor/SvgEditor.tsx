@@ -30,6 +30,8 @@ import { Edge, SimLink, SimNode, SvgEditorData, Vertex } from "./types/type";
 import type { RootState } from "~/store";
 import { offset, padding } from "./constants/constant";
 import editorSlice from "./slices/editorSlice";
+import runnerSlice from "../algorithm-runner/slices/runnerSlice";
+import { useNavigate } from "@remix-run/react";
 
 export default function SVGEditor() {
 	/* Following 2 lines could be removed, not using as this moment */
@@ -64,10 +66,14 @@ export default function SVGEditor() {
 	const linksGroupRef = React.useRef<SVGGElement | null>(null);
 	const nodesGroupRef = React.useRef<SVGGElement | null>(null);
 
+	const [isUploadDialogOpen, setIsUploadDialogOpen] =
+		React.useState<boolean>(false);
 	const [isRawMode, setIsRawMode] = React.useState<boolean>(false);
 	const [rawData, setRawData] = React.useState<string>("");
 	const [isFileUploadFinished, setIsFileUploadFinished] =
 		React.useState<boolean>(false);
+
+	const navigate = useNavigate();
 
 	const handleResetGraph = () => {
 		dispatch(editorSlice.actions.setVertices([]));
@@ -253,9 +259,8 @@ export default function SVGEditor() {
 
 	const handleFileSubmit = () => {
 		const uploadedGraph = parseGraph(rawData);
-		console.log("uploaded graph", uploadedGraph);
+		// console.log("uploaded graph", uploadedGraph);
 
-		// TODO: generate force graph data
 		if (!svgContainerRef.current) return;
 
 		const svgRect = svgContainerRef.current.getBoundingClientRect();
@@ -303,7 +308,6 @@ export default function SVGEditor() {
 			return force;
 		}
 
-
 		const simulation = d3
 			.forceSimulation<SimNode>(simulationNodes)
 			.force(
@@ -328,9 +332,9 @@ export default function SVGEditor() {
 			)
 		);
 
-		console.log("=====================");
-		console.log("sim nodes", simulationNodes);
-		console.log("sim links", simulationLinks);
+		// console.log("=====================");
+		// console.log("sim nodes", simulationNodes);
+		// console.log("sim links", simulationLinks);
 
 		const generatedSimulationState = generateSimulationGraphState(
 			simulationNodes,
@@ -346,6 +350,9 @@ export default function SVGEditor() {
 				generatedSimulationState.maxNodeId + 1
 			)
 		);
+		setIsUploadDialogOpen(false);
+		dispatch(runnerSlice.actions.setHasResult(false));
+		navigate('/app')
 	};
 
 	const generateSimulationGraphState = (
@@ -693,7 +700,10 @@ export default function SVGEditor() {
 					orientation="vertical"
 					className="h-[60%] bg-stone-300"
 				/>
-				<Dialog>
+				<Dialog
+					open={isUploadDialogOpen}
+					onOpenChange={setIsUploadDialogOpen}
+				>
 					<DialogTrigger asChild>
 						<Button variant="ghost" size="icon">
 							<Upload className="text-stone-400" />

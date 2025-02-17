@@ -97,7 +97,8 @@ export default function CanvasDisplay() {
 			// Repel nodes from each other.
 			.force("charge", d3.forceManyBody().strength(-300))
 			// Center the graph in the canvas.
-			.force("center", d3.forceCenter(canvasWidth / 2, canvasHeight / 2));
+			.force("center", d3.forceCenter(canvasWidth / 2, canvasHeight / 2))
+			.force("collide", d3.forceCollide(70));
 
 		// On every simulation tick, redraw the canvas.
 		simulation.on("tick", () => {
@@ -191,8 +192,10 @@ export default function CanvasDisplay() {
 
 			{isViewRawMode ? (
 				<div className="w-full h-full flex items-center justify-center">
-					<div className="w-1/2 h-1/2 relative overflow-scroll border-2 border-stone-200 rounded-lg 
-					py-4 px-6 shadow-sm">
+					<div
+						className="w-1/2 h-1/2 relative overflow-scroll border-2 border-stone-200 rounded-lg 
+					py-4 px-6 shadow-sm"
+					>
 						<Button
 							onClick={handleCopyRawData}
 							variant="outline"
