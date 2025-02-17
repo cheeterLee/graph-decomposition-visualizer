@@ -12,6 +12,9 @@ export default function AlgorithmRunner() {
 	const { isRunning, hasResult } = useAppSelector(
 		(state: RootState) => state.runner
 	);
+	const { vertices, edges } = useAppSelector(
+		(state: RootState) => state.editor
+	);
 
 	const dispatch = useAppDispatch();
 
@@ -31,7 +34,10 @@ export default function AlgorithmRunner() {
 
 		worker.postMessage({
 			type: "RUN_TREE_WIDTH",
-			payload: {},
+			payload: {
+				storedVertices: vertices,
+				storedEdges: edges,
+			},
 		});
 
 		worker.onmessage = function (message) {
@@ -88,7 +94,9 @@ export default function AlgorithmRunner() {
 					</Button>
 				</div>
 			</div>
-			<div className="border-2 border-stone-300 w-full row-span-1 rounded-lg"></div>
+			<div className="border-2 border-stone-300 w-full row-span-1 rounded-lg">
+				<p className="text-center py-2">description</p>
+			</div>
 		</div>
 	);
 }
