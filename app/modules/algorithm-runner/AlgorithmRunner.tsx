@@ -16,12 +16,27 @@ export default function AlgorithmRunner() {
 		(state: RootState) => state.editor
 	);
 
+	const workerRef = React.useRef<Worker | null>(null);
+
 	const dispatch = useAppDispatch();
 
 	const navigate = useNavigate();
 
+	// terminate worker when the algorithm is aborted
+	const handleeAbortRunCode = () => {
+		if (!workerRef.current) return;
+		workerRef.current.terminate();
+		dispatch(runnerSlice.actions.setIsRunning(false));
+	};
+
 	const handleRunCode = (event: React.MouseEvent<HTMLButtonElement>) => {
 		event.stopPropagation();
+
+		// destroy previous web worker
+		if (workerRef.current) {
+			workerRef.current.terminate();
+			workerRef.current = null;
+		}
 
 		dispatch(runnerSlice.actions.setIsRunning(true));
 
@@ -31,6 +46,8 @@ export default function AlgorithmRunner() {
 				type: "module",
 			}
 		);
+
+		workerRef.current = worker;
 
 		worker.postMessage({
 			type: "RUN_TREE_WIDTH",
@@ -68,7 +85,7 @@ export default function AlgorithmRunner() {
 
 	return (
 		<div className="grid grid-rows-3 gap-1 flex-1 h-[700px] rounded-lg">
-			<div className="relative border-2 border-stone-300 w-full row-span-2 rounded-lg">
+			<div className="relative border-2 border-stone-300 w-full row-span-2 rounded-lg shadow-sm">
 				<div className="max-w-full max-h-full overflow-scroll">
 					<CodeSnippet />
 				</div>
@@ -83,6 +100,15 @@ export default function AlgorithmRunner() {
 						</Button>
 					)}
 
+					{isRunning && (
+						<Button
+							variant="destructive"
+							onClick={handleeAbortRunCode}
+							className="text-stone-200"
+						>
+							Stop
+						</Button>
+					)}
 					<Button
 						onClick={handleRunCode}
 						disabled={isRunning}
@@ -94,8 +120,8 @@ export default function AlgorithmRunner() {
 					</Button>
 				</div>
 			</div>
-			<div className="border-2 border-stone-300 w-full row-span-1 rounded-lg">
-				<p className="text-center py-2">description</p>
+			<div className="border-2 border-stone-300 w-full row-span-1 rounded-lg shadow-sm">
+				<p className="text-center py-2 text-stone-400">description</p>
 			</div>
 		</div>
 	);

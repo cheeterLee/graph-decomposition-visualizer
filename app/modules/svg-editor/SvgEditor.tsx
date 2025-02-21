@@ -630,7 +630,7 @@ export default function SVGEditor() {
 	return (
 		<div
 			ref={svgContainerRef}
-			className="relative border-2 border-stone-300 flex-1 h-[700px] rounded-lg"
+			className="relative border-2 border-stone-300 flex-1 h-[700px] rounded-lg shadow-sm"
 		>
 			<div className="absolute border-2 border-stone-300 top-1 left-1/2 -translate-x-1/2 h-[50px] rounded-lg flex items-center gap-2 px-4">
 				{cursorMode === "pointer" ? (
