@@ -3,7 +3,7 @@
 */
 
 import type { MetaFunction } from "@remix-run/cloudflare";
-import { Outlet, useLoaderData } from "@remix-run/react";
+import { Outlet } from "@remix-run/react";
 import { populateDefaultGraphData } from "~/data/dataPopulation";
 import { useAppDispatch } from "~/hooks/reduxHooks";
 
@@ -19,11 +19,6 @@ export const meta: MetaFunction = () => {
 		},
 	];
 };
-
-// export function loader() {
-	// return populateDefaultGraphData();
-	// return redirect('/app');
-// }
 
 export default function App() {
 	// const data = useLoaderData<typeof loader>();

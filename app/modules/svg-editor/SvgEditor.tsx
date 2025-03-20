@@ -6,7 +6,6 @@ import { useAppSelector, useAppDispatch } from "~/hooks/reduxHooks";
 import { Button } from "~/components/ui/button";
 import { Separator } from "~/components/ui/separator";
 import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
 import {
 	Dialog,
 	DialogContent,
@@ -32,6 +31,7 @@ import { offset, padding } from "./constants/constant";
 import editorSlice from "./slices/editorSlice";
 import runnerSlice from "../algorithm-runner/slices/runnerSlice";
 import { useNavigate } from "@remix-run/react";
+import globalSlice from "~/globalSlice";
 
 export default function SVGEditor() {
 	/* Following 2 lines could be removed, not using as this moment */
@@ -351,7 +351,8 @@ export default function SVGEditor() {
 			)
 		);
 		setIsUploadDialogOpen(false);
-		dispatch(runnerSlice.actions.setHasResult(false));
+		// dispatch(runnerSlice.actions.setHasResult(false));
+		dispatch(globalSlice.actions.setHasResult(false))
 		navigate('/app')
 	};
 

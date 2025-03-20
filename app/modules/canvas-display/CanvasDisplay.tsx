@@ -149,6 +149,22 @@ export default function CanvasDisplay() {
 		};
 	}, [bags, edges, isViewRawMode]);
 
+	const handleCanvasClick = (event: MouseEvent) => {
+		console.log("canvas event", event);
+		const x = event.clientX;
+		const y = event.clientY;
+		
+	};
+
+	React.useEffect(() => {
+		if (!canvasRef.current) return;
+		canvasRef.current.addEventListener("click", handleCanvasClick);
+
+		return () => {
+			canvasRef.current?.removeEventListener("click", handleCanvasClick);
+		};
+	}, [handleCanvasClick]);
+
 	return (
 		<div className="relative border-2 border-stone-300 flex-1 h-[700px] rounded-lg">
 			<div className="absolute w-full top-1 px-2 flex items-center justify-between">

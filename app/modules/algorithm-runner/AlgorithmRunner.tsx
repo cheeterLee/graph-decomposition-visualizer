@@ -7,11 +7,13 @@ import { useAppDispatch, useAppSelector } from "~/hooks/reduxHooks";
 import type { RootState } from "~/store";
 import { Loader2 } from "lucide-react";
 import displaySlice from "../canvas-display/slices/displaySlice";
+import globalSlice from "~/globalSlice";
 
 export default function AlgorithmRunner() {
-	const { isRunning, hasResult } = useAppSelector(
-		(state: RootState) => state.runner
-	);
+	const { isRunning } = useAppSelector((state: RootState) => state.runner);
+
+	const { hasResult } = useAppSelector((state: RootState) => state.global);
+
 	const { vertices, edges } = useAppSelector(
 		(state: RootState) => state.editor
 	);
@@ -63,13 +65,14 @@ export default function AlgorithmRunner() {
 					bags: Array<number[]>;
 					edges: Array<[number, number]>;
 				} = message.data.payload.res;
-				console.log("res in main thread", res);
+				// console.log("res in main thread", res);
 
 				dispatch(displaySlice.actions.setBags(res.bags));
 				dispatch(displaySlice.actions.setEdges(res.edges));
 				dispatch(displaySlice.actions.setNodes());
 				dispatch(displaySlice.actions.flushRawData());
-				dispatch(runnerSlice.actions.setHasResult(true));
+				// dispatch(runnerSlice.actions.setHasResult(true));
+				dispatch(globalSlice.actions.setHasResult(true))
 
 				navigate("result");
 			}
