@@ -5,6 +5,7 @@
 import type { MetaFunction } from "@remix-run/cloudflare";
 import { Outlet } from "@remix-run/react";
 import { populateDefaultGraphData } from "~/data/dataPopulation";
+import globalSlice from "~/globalSlice";
 import { useAppDispatch } from "~/hooks/reduxHooks";
 
 import editorSlice from "~/modules/svg-editor/slices/editorSlice";
@@ -28,6 +29,8 @@ export default function App() {
 	const handleClickOnSpareScreen = () => {
 		dispatch(editorSlice.actions.setHighlightedElement(null));
 		dispatch(editorSlice.actions.exitAddEdgeMode());
+		dispatch(globalSlice.actions.setHasHighlightedNode(false));
+		dispatch(globalSlice.actions.setHighlightedNodeId(-1));
 	};
 
 	return (

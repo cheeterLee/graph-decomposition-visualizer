@@ -584,6 +584,10 @@ export default function SVGEditor() {
 				) {
 					dispatch(editorSlice.actions.setHighlightedElement(null));
 					dispatch(editorSlice.actions.exitAddEdgeMode());
+
+					// TODO: cancel highlight node to compare
+					dispatch(globalSlice.actions.setHasHighlightedNode(false));
+					dispatch(globalSlice.actions.setHighlightedNodeId(-1));
 				} else {
 					dispatch(
 						editorSlice.actions.setHighlightedElement({
@@ -591,6 +595,16 @@ export default function SVGEditor() {
 							id: d.id,
 						})
 					);
+
+					// TODO: highlight node to compare
+					if (hasResult) {
+						dispatch(
+							globalSlice.actions.setHasHighlightedNode(true)
+						);
+						dispatch(
+							globalSlice.actions.setHighlightedNodeId(d.id)
+						);
+					}
 				}
 			})
 			.classed(

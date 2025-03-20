@@ -4,11 +4,23 @@ import type { PayloadAction } from "@reduxjs/toolkit";
 export interface RunnerState {
 	isColorBlindMode: boolean;
 	hasResult: boolean;
+
+	hasHighlightedNode: boolean;
+	highlightedNodeId: number;
+
+	hasHighlightedBag: boolean;
+	nodesInHightedBag: number[];
 }
 
 const initialState: RunnerState = {
 	isColorBlindMode: false,
 	hasResult: false,
+
+	hasHighlightedNode: false,
+	highlightedNodeId: -1,
+
+	hasHighlightedBag: false,
+	nodesInHightedBag: [],
 };
 
 const globalSlice = createSlice({
@@ -20,6 +32,12 @@ const globalSlice = createSlice({
 		},
 		setHasResult: (state, action: PayloadAction<boolean>) => {
 			state.hasResult = action.payload;
+		},
+		setHasHighlightedNode: (state, action: PayloadAction<boolean>) => {
+			state.hasHighlightedNode = action.payload;
+		},
+		setHighlightedNodeId: (state, action: PayloadAction<number>) => {
+			state.highlightedNodeId = action.payload;
 		},
 	},
 });

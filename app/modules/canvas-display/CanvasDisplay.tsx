@@ -28,6 +28,10 @@ export default function CanvasDisplay() {
 		(state) => state.display
 	);
 
+	const { hasResult, hasHighlightedNode, highlightedNodeId } = useAppSelector(
+		(state) => state.global
+	);
+
 	const dispatch = useAppDispatch();
 
 	const canvasRef = React.useRef<HTMLCanvasElement>(null);
@@ -129,9 +133,21 @@ export default function CanvasDisplay() {
 				// Draw the oval using the canvas ellipse API.
 				context.beginPath();
 				context.ellipse(x, y, ovalWidth, ovalHeight, 0, 0, 2 * Math.PI);
-				context.fillStyle = "lightblue";
+
+				if (hasHighlightedNode) {
+					if (values.includes(highlightedNodeId)) {
+						context.fillStyle = "pink";
+						context.strokeStyle = "orange";
+					} else {
+						context.fillStyle = "lightBlue";
+						context.strokeStyle = "steelblue";
+					}
+				} else {
+					context.fillStyle = "lightblue";
+					context.strokeStyle = "steelblue";
+				}
+
 				context.fill();
-				context.strokeStyle = "steelblue";
 				context.stroke();
 
 				// Draw the text inside the oval (centered).
@@ -147,13 +163,12 @@ export default function CanvasDisplay() {
 		return () => {
 			simulation.stop();
 		};
-	}, [bags, edges, isViewRawMode]);
+	}, [bags, edges, isViewRawMode, hasHighlightedNode, highlightedNodeId]);
 
 	const handleCanvasClick = (event: MouseEvent) => {
 		console.log("canvas event", event);
 		const x = event.clientX;
 		const y = event.clientY;
-		
 	};
 
 	React.useEffect(() => {
