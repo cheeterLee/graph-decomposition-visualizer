@@ -6,6 +6,7 @@ import { ChevronLeft, Copy, Download, Eclipse, FileText } from "lucide-react";
 import { Link } from "@remix-run/react";
 import displaySlice from "./slices/displaySlice";
 import globalSlice from "~/globalSlice";
+import editorSlice from "../svg-editor/slices/editorSlice";
 
 // Define a node type used by the simulation.
 interface NodeDatum {
@@ -225,6 +226,12 @@ export default function CanvasDisplay() {
 				dispatch(globalSlice.actions.setHasHighlightedBag(false));
 				dispatch(globalSlice.actions.setNodesInHightLightedBag([]));
 				dispatch(globalSlice.actions.setHighlightedBagId(-1));
+
+				dispatch(globalSlice.actions.setHasHighlightedNode(false));
+				dispatch(globalSlice.actions.setHighlightedNodeId(-1));
+
+				// TODO: better to unsubscribe canvas display from editor slice
+				dispatch(editorSlice.actions.setHighlightedElement(null));
 			}
 		}
 	};

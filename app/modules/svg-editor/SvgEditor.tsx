@@ -47,7 +47,9 @@ export default function SVGEditor() {
 		highlightedElement,
 	} = useAppSelector((state: RootState) => state.editor);
 
-	const { hasResult } = useAppSelector((state: RootState) => state.global);
+	const { hasResult, hasHighlightedBag, nodesInHightedBag } = useAppSelector(
+		(state: RootState) => state.global
+	);
 
 	const dispatch = useAppDispatch();
 
@@ -134,6 +136,7 @@ export default function SVGEditor() {
 	const dragStarted = (event: d3.D3DragEvent<Element, Vertex, unknown>) => {
 		const group = d3
 			.select(event.sourceEvent.target.parentNode as SVGGElement)
+			.classed("dragging", true)
 			.raise();
 
 		group.select("circle").attr("stroke", "#FF7F50");
@@ -172,10 +175,11 @@ export default function SVGEditor() {
 	const dragEnded = (event: d3.D3DragEvent<Element, Vertex, unknown>) => {
 		const group = d3
 			.select(event.sourceEvent.target.parentNode as SVGGElement)
+			.classed("dragging", false)
 			.raise();
 
 		group.select("circle").attr("stroke", "#5f9ea0");
-		group.select("text").attr("stroke", "#5f9ea0");
+		group.select("text").attr("stroke", "5f9ea0");
 	};
 
 	const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -422,7 +426,7 @@ export default function SVGEditor() {
 			.attr("class", "node")
 			.attr("fill", "#fff")
 			.attr("stroke", "#5f9ea0")
-			.attr("stroke-width", 3);
+			// .attr("stroke-width", 3);
 
 		nodesGroupRef.current = nodesGroup.node();
 
@@ -513,7 +517,27 @@ export default function SVGEditor() {
 
 					return group;
 				},
-				(update) => update,
+				(update) => {
+					update.select("circle").attr("stroke", function (d) {
+						if (d3.select(((this as SVGCircleElement).parentNode) as SVGGElement).classed("dragging")) {
+							return "#FF7F50";
+						}
+						return hasHighlightedBag &&
+							!nodesInHightedBag.includes(d.id)
+							? "#FF6F61"
+							: "#5f9ea0";
+					});
+					update.select("text").attr("stroke", function (d) {
+						if (d3.select(((this as SVGTextElement).parentNode) as SVGGElement).classed("dragging")) {
+							return "#FF7F50";
+						}
+						return hasHighlightedBag &&
+							!nodesInHightedBag.includes(d.id)
+							? "#FF6F61"
+							: "#5f9ea0";
+					});
+					return update;
+				},
 				(exit) => exit.remove()
 			)
 			.attr("transform", (d) => `translate(${d.cx}, ${d.cy})`)
@@ -641,6 +665,8 @@ export default function SVGEditor() {
 		highlightedElement,
 		isAddEdgeMode,
 		edgesSet,
+		nodesInHightedBag,
+		hasHighlightedBag,
 	]);
 
 	return (
