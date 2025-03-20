@@ -47,6 +47,8 @@ export default function SVGEditor() {
 		highlightedElement,
 	} = useAppSelector((state: RootState) => state.editor);
 
+	const { hasResult } = useAppSelector((state: RootState) => state.global);
+
 	const dispatch = useAppDispatch();
 
 	const edgesSet = useSet<string>();
@@ -351,9 +353,8 @@ export default function SVGEditor() {
 			)
 		);
 		setIsUploadDialogOpen(false);
-		// dispatch(runnerSlice.actions.setHasResult(false));
-		dispatch(globalSlice.actions.setHasResult(false))
-		navigate('/app')
+		dispatch(globalSlice.actions.setHasResult(false));
+		navigate("/app");
 	};
 
 	const generateSimulationGraphState = (
