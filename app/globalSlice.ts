@@ -9,6 +9,7 @@ export interface RunnerState {
 	highlightedNodeId: number;
 
 	hasHighlightedBag: boolean;
+	highlightedBagId: number;
 	nodesInHightedBag: number[];
 }
 
@@ -20,6 +21,7 @@ const initialState: RunnerState = {
 	highlightedNodeId: -1,
 
 	hasHighlightedBag: false,
+	highlightedBagId: -1,
 	nodesInHightedBag: [],
 };
 
@@ -38,6 +40,15 @@ const globalSlice = createSlice({
 		},
 		setHighlightedNodeId: (state, action: PayloadAction<number>) => {
 			state.highlightedNodeId = action.payload;
+		},
+		setHasHighlightedBag: (state, action: PayloadAction<boolean>) => {
+			state.hasHighlightedBag = action.payload;
+		},
+		setHighlightedBagId: (state, action: PayloadAction<number>) => {
+			state.highlightedBagId = action.payload;
+		},
+		setNodesInHightLightedBag: (state, action: PayloadAction<number[]>) => {
+			state.nodesInHightedBag = action.payload;
 		},
 	},
 });

@@ -29,8 +29,13 @@ export default function App() {
 	const handleClickOnSpareScreen = () => {
 		dispatch(editorSlice.actions.setHighlightedElement(null));
 		dispatch(editorSlice.actions.exitAddEdgeMode());
+
 		dispatch(globalSlice.actions.setHasHighlightedNode(false));
 		dispatch(globalSlice.actions.setHighlightedNodeId(-1));
+
+		dispatch(globalSlice.actions.setHasHighlightedBag(false));
+		dispatch(globalSlice.actions.setNodesInHightLightedBag([]));
+		dispatch(globalSlice.actions.setHighlightedBagId(-1));
 	};
 
 	return (

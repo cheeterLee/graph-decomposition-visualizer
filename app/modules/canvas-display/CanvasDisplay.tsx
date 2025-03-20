@@ -5,6 +5,7 @@ import { Button } from "~/components/ui/button";
 import { ChevronLeft, Copy, Download, Eclipse, FileText } from "lucide-react";
 import { Link } from "@remix-run/react";
 import displaySlice from "./slices/displaySlice";
+import globalSlice from "~/globalSlice";
 
 // Define a node type used by the simulation.
 interface NodeDatum {
@@ -23,18 +24,29 @@ interface LinkDatum {
 	target: number | NodeDatum;
 }
 
+// Define oval dimensions.
+const ovalWidth = 50;
+const ovalHeight = 15;
+
 export default function CanvasDisplay() {
 	const { bags, edges, isViewRawMode, rawData } = useAppSelector(
 		(state) => state.display
 	);
 
-	const { hasResult, hasHighlightedNode, highlightedNodeId } = useAppSelector(
-		(state) => state.global
-	);
+	const {
+		hasResult,
+		hasHighlightedNode,
+		highlightedNodeId,
+		hasHighlightedBag,
+		highlightedBagId,
+		nodesInHightedBag,
+	} = useAppSelector((state) => state.global);
 
 	const dispatch = useAppDispatch();
 
 	const canvasRef = React.useRef<HTMLCanvasElement>(null);
+
+	const bagsRef = React.useRef<NodeDatum[]>([]);
 
 	const handleDownload = () => {
 		// create a Blob with the content, specifying the MIME type.
@@ -83,6 +95,8 @@ export default function CanvasDisplay() {
 		if (!context) return;
 
 		const nodes: NodeDatum[] = bags.map(([id, values]) => ({ id, values }));
+		bagsRef.current = nodes;
+
 		const links: LinkDatum[] = edges.map(([source, target]) => ({
 			source,
 			target,
@@ -126,9 +140,6 @@ export default function CanvasDisplay() {
 			nodes.forEach((node) => {
 				if (node.x == null || node.y == null) return;
 				const { x, y, values } = node;
-				// Define oval dimensions.
-				const ovalWidth = 50;
-				const ovalHeight = 15;
 
 				// Draw the oval using the canvas ellipse API.
 				context.beginPath();
@@ -147,6 +158,11 @@ export default function CanvasDisplay() {
 					context.strokeStyle = "steelblue";
 				}
 
+				if (hasHighlightedBag && highlightedBagId == node.id) {
+					context.fillStyle = "yellow";
+					context.strokeStyle = "orange";
+				}
+
 				context.fill();
 				context.stroke();
 
@@ -163,12 +179,54 @@ export default function CanvasDisplay() {
 		return () => {
 			simulation.stop();
 		};
-	}, [bags, edges, isViewRawMode, hasHighlightedNode, highlightedNodeId]);
+	}, [
+		bags,
+		edges,
+		isViewRawMode,
+		hasHighlightedNode,
+		highlightedNodeId,
+		hasHighlightedBag,
+		highlightedBagId,
+	]);
 
 	const handleCanvasClick = (event: MouseEvent) => {
-		console.log("canvas event", event);
-		const x = event.clientX;
-		const y = event.clientY;
+		event.stopPropagation();
+
+		const canvas = canvasRef.current;
+		if (!canvas) return;
+
+		const rect = canvas.getBoundingClientRect();
+
+		// convert viewport coord -> canvas coord
+		const x = (event.clientX - rect.left) * (canvas.width / rect.width);
+		const y = (event.clientY - rect.top) * (canvas.height / rect.height);
+
+		for (const node of bagsRef.current) {
+			if (node.x == null || node.y == null) continue;
+			const dx = x - node.x;
+			const dy = y - node.y;
+			// Ellipse hit test: if the point is inside the ellipse.
+			if (
+				(dx * dx) / (ovalWidth * ovalWidth) +
+					(dy * dy) / (ovalHeight * ovalHeight) <=
+				1
+			) {
+				const bag = bags.find((b) => b[0] === node.id);
+				if (bag !== undefined) {
+					dispatch(globalSlice.actions.setHasHighlightedBag(true));
+					dispatch(globalSlice.actions.setHighlightedBagId(bag[0]));
+					dispatch(
+						globalSlice.actions.setNodesInHightLightedBag(bag[1])
+					);
+				}
+
+				break;
+			} else {
+				dispatch(globalSlice.actions.setHasHighlightedBag(false));
+				dispatch(globalSlice.actions.setNodesInHightLightedBag([]));
+				dispatch(globalSlice.actions.setHighlightedBagId(-1));
+			}
+		}
 	};
 
 	React.useEffect(() => {
