@@ -43,6 +43,8 @@ export default function CanvasDisplay() {
 		nodesInHightedBag,
 	} = useAppSelector((state) => state.global);
 
+	const [simulationDone, setSimulationDone] = React.useState(false);
+
 	const dispatch = useAppDispatch();
 
 	const canvasRef = React.useRef<HTMLCanvasElement>(null);
@@ -245,9 +247,13 @@ export default function CanvasDisplay() {
 			.force("collide", d3.forceCollide(70));
 
 		// On every simulation tick, redraw the canvas.
-		simulation.on("tick", () => {
-			drawCanvas();
-		});
+		simulation
+			.on("tick", () => {
+				drawCanvas();
+			})
+			.on("end", () => {
+				setSimulationDone(true);
+			});
 
 		return () => {
 			simulation.stop();
