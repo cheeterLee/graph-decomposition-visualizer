@@ -41,14 +41,31 @@ const globalSlice = createSlice({
 		setHighlightedNodeId: (state, action: PayloadAction<number>) => {
 			state.highlightedNodeId = action.payload;
 		},
-		setHasHighlightedBag: (state, action: PayloadAction<boolean>) => {
-			state.hasHighlightedBag = action.payload;
+		// setHasHighlightedBag: (state, action: PayloadAction<boolean>) => {
+		// 	state.hasHighlightedBag = action.payload;
+		// },
+		// setHighlightedBagId: (state, action: PayloadAction<number>) => {
+		// 	state.highlightedBagId = action.payload;
+		// },
+		// setNodesInHightLightedBag: (state, action: PayloadAction<number[]>) => {
+		// 	state.nodesInHightedBag = action.payload;
+		// },
+
+		setHighlightedBag: (
+			state,
+			action: PayloadAction<{ id: number; nodes: number[] }>
+		) => {
+			state.hasHighlightedBag = true;
+			state.nodesInHightedBag = action.payload.nodes;
+			state.highlightedBagId = action.payload.id;
 		},
-		setHighlightedBagId: (state, action: PayloadAction<number>) => {
-			state.highlightedBagId = action.payload;
-		},
-		setNodesInHightLightedBag: (state, action: PayloadAction<number[]>) => {
-			state.nodesInHightedBag = action.payload;
+
+		clearHighlight: (state) => {
+			state.hasHighlightedBag = false;
+			state.highlightedBagId = -1;
+			state.nodesInHightedBag = [];
+			state.hasHighlightedNode = false;
+			state.highlightedNodeId = -1;
 		},
 	},
 });

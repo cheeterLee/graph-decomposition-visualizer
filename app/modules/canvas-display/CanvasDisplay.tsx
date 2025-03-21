@@ -53,6 +53,7 @@ export default function CanvasDisplay() {
 	const bagsRef = React.useRef<NodeDatum[]>([]);
 
 	const handleCanvasClick = (event: MouseEvent) => {
+		// TODO: clicking before the force simulation ends will only updates global state, but not rendering highlight correctly
 		event.stopPropagation();
 
 		const canvas = canvasRef.current;
@@ -64,37 +65,31 @@ export default function CanvasDisplay() {
 		const x = (event.clientX - rect.left) * (canvas.width / rect.width);
 		const y = (event.clientY - rect.top) * (canvas.height / rect.height);
 
+		let clickedBag: [number, number[]] | null = null;
 		for (const node of bagsRef.current) {
 			if (node.x == null || node.y == null) continue;
-			const dx = x - node.x;
-			const dy = y - node.y;
-			// Ellipse hit test: if the point is inside the ellipse.
+			const dx = x - node.x,
+				dy = y - node.y;
 			if (
 				(dx * dx) / (ovalWidth * ovalWidth) +
 					(dy * dy) / (ovalHeight * ovalHeight) <=
 				1
 			) {
-				const bag = bags.find((b) => b[0] === node.id);
-				if (bag !== undefined) {
-					dispatch(globalSlice.actions.setHasHighlightedBag(true));
-					dispatch(globalSlice.actions.setHighlightedBagId(bag[0]));
-					dispatch(
-						globalSlice.actions.setNodesInHightLightedBag(bag[1])
-					);
-				}
-
+				clickedBag = bags.find((b) => b[0] === node.id) ?? null;
 				break;
-			} else {
-				dispatch(globalSlice.actions.setHasHighlightedBag(false));
-				dispatch(globalSlice.actions.setNodesInHightLightedBag([]));
-				dispatch(globalSlice.actions.setHighlightedBagId(-1));
-
-				dispatch(globalSlice.actions.setHasHighlightedNode(false));
-				dispatch(globalSlice.actions.setHighlightedNodeId(-1));
-
-				// TODO: better to unsubscribe canvas display from editor slice
-				dispatch(editorSlice.actions.setHighlightedElement(null));
 			}
+		}
+
+		if (clickedBag) {
+			dispatch(
+				globalSlice.actions.setHighlightedBag({
+					id: clickedBag[0],
+					nodes: clickedBag[1],
+				})
+			);
+		} else {
+			dispatch(globalSlice.actions.clearHighlight());
+			dispatch(editorSlice.actions.setHighlightedElement(null));
 		}
 	};
 
