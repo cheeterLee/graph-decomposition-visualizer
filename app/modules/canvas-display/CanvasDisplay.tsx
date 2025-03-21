@@ -47,148 +47,10 @@ export default function CanvasDisplay() {
 
 	const canvasRef = React.useRef<HTMLCanvasElement>(null);
 
+	const nodesRef = React.useRef<NodeDatum[]>([]);
+	const linksRef = React.useRef<LinkDatum[]>([]);
+
 	const bagsRef = React.useRef<NodeDatum[]>([]);
-
-	const handleDownload = () => {
-		// create a Blob with the content, specifying the MIME type.
-		const blob = new Blob([rawData], { type: "text/plain;charset=utf-8" });
-
-		// create an object URL and a temporary link element to trigger the download.
-		const url = window.URL.createObjectURL(blob);
-		const link = document.createElement("a");
-		link.href = url;
-		link.download = "decomposed.td";
-
-		// append the link to the document, trigger a click, and then clean up.
-		document.body.appendChild(link);
-		link.click();
-		document.body.removeChild(link);
-		window.URL.revokeObjectURL(url);
-	};
-
-	const handleViewRaw = () => {
-		dispatch(displaySlice.actions.setIsViewRawMode(true));
-	};
-
-	const handleViewGraph = () => {
-		dispatch(displaySlice.actions.setIsViewRawMode(false));
-	};
-
-	const handleCopyRawData = () => {
-		window.navigator.clipboard.writeText(rawData);
-	};
-
-	React.useEffect(() => {
-		const canvas = canvasRef.current;
-		if (!canvas) return;
-
-		// get canvas displayed width and height
-		const canvasWidth = canvas.getBoundingClientRect().width;
-		const canvasHeight = canvas.getBoundingClientRect().height;
-
-		// set attributes for the canvas instance
-		canvas.width = canvasWidth;
-		canvas.height = canvasHeight;
-
-		console.log("w", canvasWidth, "h", canvasHeight);
-
-		const context = canvas.getContext("2d");
-		if (!context) return;
-
-		const nodes: NodeDatum[] = bags.map(([id, values]) => ({ id, values }));
-		bagsRef.current = nodes;
-
-		const links: LinkDatum[] = edges.map(([source, target]) => ({
-			source,
-			target,
-		}));
-
-		const simulation = d3
-			.forceSimulation<NodeDatum>(nodes)
-			// The link force uses the bag id for matching.
-			.force(
-				"link",
-				d3
-					.forceLink<NodeDatum, LinkDatum>(links)
-					.id((d) => d.id)
-					.distance(80)
-			)
-			// Repel nodes from each other.
-			.force("charge", d3.forceManyBody().strength(-300))
-			// Center the graph in the canvas.
-			.force("center", d3.forceCenter(canvasWidth / 2, canvasHeight / 2))
-			.force("collide", d3.forceCollide(70));
-
-		// On every simulation tick, redraw the canvas.
-		simulation.on("tick", () => {
-			// Clear the canvas.
-			context.clearRect(0, 0, canvasWidth, canvasHeight);
-
-			// Draw all links.
-			context.strokeStyle = "#aaa";
-			context.lineWidth = 2;
-			links.forEach((link) => {
-				// After simulation starts, source and target are node objects.
-				const source = link.source as NodeDatum;
-				const target = link.target as NodeDatum;
-				context.beginPath();
-				context.moveTo(source.x!, source.y!);
-				context.lineTo(target.x!, target.y!);
-				context.stroke();
-			});
-
-			// Draw all nodes as ovals with the bag numbers inside.
-			nodes.forEach((node) => {
-				if (node.x == null || node.y == null) return;
-				const { x, y, values } = node;
-
-				// Draw the oval using the canvas ellipse API.
-				context.beginPath();
-				context.ellipse(x, y, ovalWidth, ovalHeight, 0, 0, 2 * Math.PI);
-
-				if (hasHighlightedNode) {
-					if (values.includes(highlightedNodeId)) {
-						context.fillStyle = "pink";
-						context.strokeStyle = "orange";
-					} else {
-						context.fillStyle = "lightBlue";
-						context.strokeStyle = "steelblue";
-					}
-				} else {
-					context.fillStyle = "lightblue";
-					context.strokeStyle = "steelblue";
-				}
-
-				if (hasHighlightedBag && highlightedBagId == node.id) {
-					context.fillStyle = "yellow";
-					context.strokeStyle = "orange";
-				}
-
-				context.fill();
-				context.stroke();
-
-				// Draw the text inside the oval (centered).
-				const text = values.join(",");
-				context.fillStyle = "black";
-				context.font = "12px sans-serif";
-				const textMetrics = context.measureText(text);
-				context.fillText(text, x - textMetrics.width / 2, y + 4);
-			});
-		});
-
-		// Clean up the simulation on component unmount or when bags/edges change.
-		return () => {
-			simulation.stop();
-		};
-	}, [
-		bags,
-		edges,
-		isViewRawMode,
-		hasHighlightedNode,
-		highlightedNodeId,
-		hasHighlightedBag,
-		highlightedBagId,
-	]);
 
 	const handleCanvasClick = (event: MouseEvent) => {
 		event.stopPropagation();
@@ -235,6 +97,167 @@ export default function CanvasDisplay() {
 			}
 		}
 	};
+
+	const handleDownload = () => {
+		// create a Blob with the content, specifying the MIME type.
+		const blob = new Blob([rawData], { type: "text/plain;charset=utf-8" });
+
+		// create an object URL and a temporary link element to trigger the download.
+		const url = window.URL.createObjectURL(blob);
+		const link = document.createElement("a");
+		link.href = url;
+		link.download = "decomposed.td";
+
+		// append the link to the document, trigger a click, and then clean up.
+		document.body.appendChild(link);
+		link.click();
+		document.body.removeChild(link);
+		window.URL.revokeObjectURL(url);
+	};
+
+	const handleViewRaw = () => {
+		dispatch(displaySlice.actions.setIsViewRawMode(true));
+	};
+
+	const handleViewGraph = () => {
+		dispatch(displaySlice.actions.setIsViewRawMode(false));
+	};
+
+	const handleCopyRawData = () => {
+		window.navigator.clipboard.writeText(rawData);
+	};
+
+	const drawCanvas = () => {
+		const canvas = canvasRef.current;
+		if (!canvas) return;
+
+		const nodes = nodesRef.current;
+		const links = linksRef.current;
+
+		if (!nodes || !links) return;
+
+		const context = canvas.getContext("2d");
+		if (!context) return;
+		// get canvas displayed width and height
+		const canvasWidth = canvas.getBoundingClientRect().width;
+		const canvasHeight = canvas.getBoundingClientRect().height;
+
+		// Clear the canvas.
+		context.clearRect(0, 0, canvasWidth, canvasHeight);
+
+		// Draw all links.
+		context.strokeStyle = "#aaa";
+		context.lineWidth = 2;
+		links.forEach((link) => {
+			// After simulation starts, source and target are node objects.
+			const source = link.source as NodeDatum;
+			const target = link.target as NodeDatum;
+			context.beginPath();
+			context.moveTo(source.x!, source.y!);
+			context.lineTo(target.x!, target.y!);
+			context.stroke();
+		});
+
+		// Draw all nodes as ovals with the bag numbers inside.
+		nodes.forEach((node) => {
+			if (node.x == null || node.y == null) return;
+			const { x, y, values } = node;
+
+			// Draw the oval using the canvas ellipse API.
+			context.beginPath();
+			context.ellipse(x, y, ovalWidth, ovalHeight, 0, 0, 2 * Math.PI);
+
+			if (hasHighlightedNode) {
+				if (values.includes(highlightedNodeId)) {
+					context.fillStyle = "pink";
+					context.strokeStyle = "orange";
+				} else {
+					context.fillStyle = "lightBlue";
+					context.strokeStyle = "steelblue";
+				}
+			} else {
+				context.fillStyle = "lightblue";
+				context.strokeStyle = "steelblue";
+			}
+
+			if (hasHighlightedBag && highlightedBagId == node.id) {
+				context.fillStyle = "yellow";
+				context.strokeStyle = "orange";
+			}
+
+			context.fill();
+			context.stroke();
+
+			// Draw the text inside the oval (centered).
+			const text = values.join(",");
+			context.fillStyle = "black";
+			context.font = "12px sans-serif";
+			const textMetrics = context.measureText(text);
+			context.fillText(text, x - textMetrics.width / 2, y + 4);
+		});
+	};
+
+	React.useEffect(() => {
+		drawCanvas();
+	}, [
+		hasHighlightedBag,
+		highlightedBagId,
+		highlightedNodeId,
+		hasHighlightedNode,
+	]);
+
+	React.useEffect(() => {
+		const canvas = canvasRef.current;
+		if (!canvas) return;
+
+		// get canvas displayed width and height
+		const canvasWidth = canvas.getBoundingClientRect().width;
+		const canvasHeight = canvas.getBoundingClientRect().height;
+
+		// set attributes for the canvas instance
+		canvas.width = canvasWidth;
+		canvas.height = canvasHeight;
+
+		const context = canvas.getContext("2d");
+		if (!context) return;
+
+		// bagsRef.current = nodes;
+		const nodes: NodeDatum[] = bags.map(([id, values]) => ({ id, values }));
+		bagsRef.current = nodes;
+
+		const links: LinkDatum[] = edges.map(([source, target]) => ({
+			source,
+			target,
+		}));
+
+		nodesRef.current = nodes;
+		linksRef.current = links;
+
+		const simulation = d3
+			.forceSimulation<NodeDatum>(nodes)
+			// The link force uses the bag id for matching.
+			.force(
+				"link",
+				d3
+					.forceLink<NodeDatum, LinkDatum>(links)
+					.id((d) => d.id)
+					.distance(80)
+			)
+			// Repel nodes from each other.
+			.force("charge", d3.forceManyBody().strength(-300))
+			// Center the graph in the canvas.
+			.force("center", d3.forceCenter(canvasWidth / 2, canvasHeight / 2))
+			.force("collide", d3.forceCollide(70));
+
+		// On every simulation tick, redraw the canvas.
+		simulation.on("tick", () => {
+			drawCanvas();
+		});
+
+		return () => {
+			simulation.stop();
+		};
+	}, [bags, edges, isViewRawMode]);
 
 	React.useEffect(() => {
 		if (!canvasRef.current) return;

@@ -191,7 +191,7 @@ export default function SVGEditor() {
 		reader.onloadend = (event: ProgressEvent<FileReader>) => {
 			const text = event.target?.result;
 			if (typeof text === "string") {
-				console.log(text);
+				// console.log(text);
 				setRawData(text);
 			}
 			setIsFileUploadFinished(true);

@@ -11,7 +11,7 @@ onmessage = function (msg) {
 
 			try {
 				const res = runTreeWidth(totalNodes, totalEdges, nodes, edges);
-				console.log("res in worker", res);
+				// console.log("res in worker", res);
 				postMessage({
 					type: "RESULT",
 					payload: {
