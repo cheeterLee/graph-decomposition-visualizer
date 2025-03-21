@@ -11,6 +11,8 @@ export interface RunnerState {
 	hasHighlightedBag: boolean;
 	highlightedBagId: number;
 	nodesInHightedBag: number[];
+
+	selectedBagIds: number[];
 }
 
 const initialState: RunnerState = {
@@ -23,6 +25,8 @@ const initialState: RunnerState = {
 	hasHighlightedBag: false,
 	highlightedBagId: -1,
 	nodesInHightedBag: [],
+
+	selectedBagIds: [],
 };
 
 const globalSlice = createSlice({
@@ -50,6 +54,10 @@ const globalSlice = createSlice({
 		// setNodesInHightLightedBag: (state, action: PayloadAction<number[]>) => {
 		// 	state.nodesInHightedBag = action.payload;
 		// },
+
+		setSelectedBagIds: (state, action: PayloadAction<number[]>) => {
+			state.selectedBagIds = action.payload;
+		},
 
 		setHighlightedBag: (
 			state,

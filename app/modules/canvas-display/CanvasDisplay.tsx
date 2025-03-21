@@ -41,9 +41,24 @@ export default function CanvasDisplay() {
 		hasHighlightedBag,
 		highlightedBagId,
 		nodesInHightedBag,
+		selectedBagIds,
 	} = useAppSelector((state) => state.global);
 
 	const [simulationDone, setSimulationDone] = React.useState(false);
+
+	const [selectionStart, setSelectionStart] = React.useState<{
+		x: number;
+		y: number;
+	} | null>(null);
+	const [selectionRect, setSelectionRect] = React.useState<{
+		x: number;
+		y: number;
+		width: number;
+		height: number;
+	} | null>(null);
+	const [selectedNodeIds, setSelectedNodeIds] = React.useState<Set<number>>(
+		new Set()
+	);
 
 	const dispatch = useAppDispatch();
 
@@ -93,6 +108,58 @@ export default function CanvasDisplay() {
 			dispatch(globalSlice.actions.clearHighlight());
 			dispatch(editorSlice.actions.setHighlightedElement(null));
 		}
+	};
+
+	const toCanvasCoords = (event: MouseEvent) => {
+		const canvas = canvasRef.current!;
+		const rect = canvas.getBoundingClientRect();
+		return {
+			x: (event.clientX - rect.left) * (canvas.width / rect.width),
+			y: (event.clientY - rect.top) * (canvas.height / rect.height),
+		};
+	};
+
+	const handleMouseDown = (e: MouseEvent) => {
+		const { x, y } = toCanvasCoords(e);
+		setSelectionStart({ x, y });
+		setSelectionRect({ x, y, width: 0, height: 0 });
+	};
+
+	const handleMouseMove = (e: MouseEvent) => {
+		if (!selectionStart) return;
+		const { x, y } = toCanvasCoords(e);
+		const rect = {
+			x: Math.min(selectionStart.x, x),
+			y: Math.min(selectionStart.y, y),
+			width: Math.abs(x - selectionStart.x),
+			height: Math.abs(y - selectionStart.y),
+		};
+		setSelectionRect(rect);
+	};
+
+	const handleMouseUp = () => {
+		if (!selectionRect) {
+			setSelectionStart(null);
+			return;
+		}
+
+		const newlySelected = new Set<number>();
+		for (const node of bagsRef.current) {
+			if (node.x == null || node.y == null) continue;
+			const insideX =
+				node.x >= selectionRect.x &&
+				node.x <= selectionRect.x + selectionRect.width;
+			const insideY =
+				node.y >= selectionRect.y &&
+				node.y <= selectionRect.y + selectionRect.height;
+			if (insideX && insideY) newlySelected.add(node.id);
+		}
+		setSelectedNodeIds(newlySelected);
+		dispatch(
+			globalSlice.actions.setSelectedBagIds(Array.from(newlySelected))
+		); // you'll need to add this action
+		setSelectionStart(null);
+		setSelectionRect(null);
 	};
 
 	const handleDownload = () => {
@@ -182,6 +249,11 @@ export default function CanvasDisplay() {
 				context.strokeStyle = "orange";
 			}
 
+			if (selectedNodeIds.has(node.id)) {
+				context.fillStyle = "rgba(255,165,0,0.6)"; // orange highlight
+				context.strokeStyle = "orange";
+			}
+
 			context.fill();
 			context.stroke();
 
@@ -192,6 +264,18 @@ export default function CanvasDisplay() {
 			const textMetrics = context.measureText(text);
 			context.fillText(text, x - textMetrics.width / 2, y + 4);
 		});
+
+		if (selectionRect) {
+			context.save();
+			context.setLineDash([4]);
+			context.strokeRect(
+				selectionRect.x,
+				selectionRect.y,
+				selectionRect.width,
+				selectionRect.height
+			);
+			context.restore();
+		}
 	};
 
 	React.useEffect(() => {
@@ -252,6 +336,7 @@ export default function CanvasDisplay() {
 				drawCanvas();
 			})
 			.on("end", () => {
+				// TODO: toast to wait for simulation finished then enable click event
 				setSimulationDone(true);
 			});
 
@@ -268,6 +353,30 @@ export default function CanvasDisplay() {
 			canvasRef.current?.removeEventListener("click", handleCanvasClick);
 		};
 	}, [handleCanvasClick]);
+
+	React.useEffect(() => {
+		const canvas = canvasRef.current;
+		if (!canvas) return;
+		canvas.addEventListener("mousedown", handleMouseDown);
+		canvas.addEventListener("mousemove", handleMouseMove);
+		canvas.addEventListener("mouseup", handleMouseUp);
+
+		return () => {
+			canvas.removeEventListener("mousedown", handleMouseDown);
+			canvas.removeEventListener("mousemove", handleMouseMove);
+			canvas.removeEventListener("mouseup", handleMouseUp);
+		};
+	}, [selectionStart, selectionRect]);
+
+	React.useEffect(() => {
+		drawCanvas();
+	}, [
+		selectionStart,
+		selectedNodeIds,
+		selectionRect,
+		highlightedNodeId,
+		highlightedBagId,
+	]);
 
 	return (
 		<div className="relative border-2 border-stone-300 flex-1 h-[700px] rounded-lg">
