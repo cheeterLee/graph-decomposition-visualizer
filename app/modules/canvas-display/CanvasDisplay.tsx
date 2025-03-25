@@ -278,7 +278,7 @@ export default function CanvasDisplay() {
 			} else {
 				context.fillStyle = colorPalette.lightTheme.bagBorder;
 			}
-			
+
 			if (highlightedBagId === node.id) {
 				context.fillStyle = colorPalette.lightTheme.bagHighlight;
 			}
@@ -356,7 +356,8 @@ export default function CanvasDisplay() {
 			.force("charge", d3.forceManyBody().strength(-300))
 			// Center the graph in the canvas.
 			.force("center", d3.forceCenter(canvasWidth / 2, canvasHeight / 2))
-			.force("collide", d3.forceCollide(70));
+			.force("collide", d3.forceCollide(70))
+			.alphaDecay(0.1);
 
 		// On every simulation tick, redraw the canvas.
 		simulation
