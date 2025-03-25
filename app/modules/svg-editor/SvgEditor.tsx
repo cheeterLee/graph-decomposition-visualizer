@@ -537,7 +537,7 @@ export default function SVGEditor() {
 							return colorPalette.lightTheme.vertexDrag;
 						}
 						return hasHighlightedBag &&
-							!nodesInHightedBag.includes(d.id)
+							nodesInHightedBag.includes(d.id)
 							? colorPalette.lightTheme.vertexHighlight
 							: colorPalette.lightTheme.vertexBorder;
 					});
@@ -553,7 +553,7 @@ export default function SVGEditor() {
 							return colorPalette.lightTheme.vertexDrag;
 						}
 						return hasHighlightedBag &&
-							!nodesInHightedBag.includes(d.id)
+							nodesInHightedBag.includes(d.id)
 							? colorPalette.lightTheme.vertexHighlight
 							: colorPalette.lightTheme.vertexBorder;
 					});
