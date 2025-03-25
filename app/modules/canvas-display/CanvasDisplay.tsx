@@ -73,9 +73,19 @@ export default function CanvasDisplay() {
 
 	const bagsRef = React.useRef<NodeDatum[]>([]);
 
+	// avoid click event overlaps with drag selection event
+	const isDraggingRef = React.useRef<boolean>(false);
+
 	const handleCanvasClick = (event: MouseEvent) => {
-		// TODO: clicking before the force simulation ends will only updates global state, but not rendering highlight correctly
 		event.stopPropagation();
+
+		if (isDraggingRef.current === true) {
+			isDraggingRef.current = false;
+			// event.stopPropagation();
+			return;
+		}
+
+		// TODO: clicking before the force simulation ends will only updates global state, but not rendering highlight correctly
 
 		const canvas = canvasRef.current;
 		if (!canvas) return;
@@ -124,6 +134,7 @@ export default function CanvasDisplay() {
 	};
 
 	const handleMouseDown = (e: MouseEvent) => {
+		isDraggingRef.current = false;
 		const { x, y } = toCanvasCoords(e);
 		setSelectionStart({ x, y });
 		setSelectionRect({ x, y, width: 0, height: 0 });
@@ -131,6 +142,7 @@ export default function CanvasDisplay() {
 
 	const handleMouseMove = (e: MouseEvent) => {
 		if (!selectionStart) return;
+		isDraggingRef.current = true;
 		const { x, y } = toCanvasCoords(e);
 		const rect = {
 			x: Math.min(selectionStart.x, x),
@@ -162,9 +174,31 @@ export default function CanvasDisplay() {
 		if (newlySelected.size > 0) {
 			setShowAddToGroupButton(true);
 		}
+		// dispatch(
+		// 	globalSlice.actions.setSelectedBagIds(Array.from(newlySelected))
+		// ); // you'll need to add this action
+
+		console.log("newly", newlySelected);
+
+		const nodesInHighlightedBags = [
+			...bags.reduce((prev, curr) => {
+				if (newlySelected.has(curr[0])) {
+					for (const el of curr[1]) {
+						prev.add(el);
+					}
+				}
+				return prev;
+			}, new Set<number>()),
+		];
+
+		console.log("nodes in highlighted", nodesInHighlightedBags);
+
 		dispatch(
-			globalSlice.actions.setSelectedBagIds(Array.from(newlySelected))
-		); // you'll need to add this action
+			globalSlice.actions.setGroupOfHighlightedNodes(
+				nodesInHighlightedBags
+			)
+		);
+
 		setSelectionStart(null);
 		setSelectionRect(null);
 	};
