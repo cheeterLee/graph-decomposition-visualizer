@@ -60,6 +60,9 @@ export default function CanvasDisplay() {
 		new Set()
 	);
 
+	const [showAddToGroupButton, setShowAddToGroupButton] =
+		React.useState<boolean>(false);
+
 	const dispatch = useAppDispatch();
 
 	const canvasRef = React.useRef<HTMLCanvasElement>(null);
@@ -155,6 +158,9 @@ export default function CanvasDisplay() {
 			if (insideX && insideY) newlySelected.add(node.id);
 		}
 		setSelectedNodeIds(newlySelected);
+		if (newlySelected.size > 0) {
+			setShowAddToGroupButton(true);
+		}
 		dispatch(
 			globalSlice.actions.setSelectedBagIds(Array.from(newlySelected))
 		); // you'll need to add this action
@@ -352,7 +358,7 @@ export default function CanvasDisplay() {
 		return () => {
 			canvasRef.current?.removeEventListener("click", handleCanvasClick);
 		};
-	}, [handleCanvasClick]);
+	}, [handleCanvasClick, isViewRawMode]);
 
 	React.useEffect(() => {
 		const canvas = canvasRef.current;
@@ -366,7 +372,7 @@ export default function CanvasDisplay() {
 			canvas.removeEventListener("mousemove", handleMouseMove);
 			canvas.removeEventListener("mouseup", handleMouseUp);
 		};
-	}, [selectionStart, selectionRect]);
+	}, [selectionStart, selectionRect, isViewRawMode]);
 
 	React.useEffect(() => {
 		drawCanvas();
@@ -439,7 +445,16 @@ export default function CanvasDisplay() {
 					</div>
 				</div>
 			) : (
-				<canvas ref={canvasRef} className="w-full h-full" />
+				<div className="w-full h-full">
+					<canvas ref={canvasRef} className="w-full h-full" />
+					{showAddToGroupButton && (
+						<div className="absolute border-2 border-stone-300 bottom-1 left-1/2 -translate-x-1/2 h-[40px] rounded-lg flex items-center justify-between gap-2 px-4">
+							<Button size='sm' variant="ghost" className="text-stone-400">
+								Select as a group
+							</Button>
+						</div>
+					)}
+				</div>
 			)}
 		</div>
 	);
