@@ -7,6 +7,7 @@ import { Link } from "@remix-run/react";
 import displaySlice from "./slices/displaySlice";
 import globalSlice from "~/globalSlice";
 import editorSlice from "../svg-editor/slices/editorSlice";
+import { colorPalette } from "~/lib/config";
 
 // Define a node type used by the simulation.
 interface NodeDatum {
@@ -216,7 +217,8 @@ export default function CanvasDisplay() {
 		context.clearRect(0, 0, canvasWidth, canvasHeight);
 
 		// Draw all links.
-		context.strokeStyle = "#aaa";
+		// context.strokeStyle = "#aaa";
+		context.strokeStyle = colorPalette.lightTheme.edge;
 		context.lineWidth = 2;
 		links.forEach((link) => {
 			// After simulation starts, source and target are node objects.
@@ -239,25 +241,27 @@ export default function CanvasDisplay() {
 
 			if (hasHighlightedNode) {
 				if (values.includes(highlightedNodeId)) {
-					context.fillStyle = "pink";
-					context.strokeStyle = "orange";
+					// context.fillStyle = "pink";
+					context.fillStyle = colorPalette.lightTheme.bagFill;
+					// context.strokeStyle = "orange";
+					context.strokeStyle = colorPalette.lightTheme.bagHighlight;
 				} else {
-					context.fillStyle = "lightBlue";
-					context.strokeStyle = "steelblue";
+					context.fillStyle = colorPalette.lightTheme.vertexFill;
+					context.strokeStyle = colorPalette.lightTheme.vertexBorder;
 				}
 			} else {
-				context.fillStyle = "lightblue";
-				context.strokeStyle = "steelblue";
+				context.fillStyle = colorPalette.lightTheme.vertexFill;
+				context.strokeStyle = colorPalette.lightTheme.vertexBorder;
 			}
 
 			if (hasHighlightedBag && highlightedBagId == node.id) {
-				context.fillStyle = "yellow";
-				context.strokeStyle = "orange";
+				context.fillStyle = colorPalette.lightTheme.bagFill;
+				context.strokeStyle = colorPalette.lightTheme.bagHighlight;
 			}
 
 			if (selectedNodeIds.has(node.id)) {
-				context.fillStyle = "rgba(255,165,0,0.6)"; // orange highlight
-				context.strokeStyle = "orange";
+				context.fillStyle = colorPalette.lightTheme.bagFill;
+				context.strokeStyle = colorPalette.lightTheme.bagHighlight;
 			}
 
 			context.fill();
@@ -265,7 +269,25 @@ export default function CanvasDisplay() {
 
 			// Draw the text inside the oval (centered).
 			const text = values.join(",");
-			context.fillStyle = "black";
+			if (hasHighlightedNode) {
+				if (values.includes(highlightedNodeId)) {
+					context.fillStyle = colorPalette.lightTheme.bagHighlight;
+				} else {
+					context.fillStyle = colorPalette.lightTheme.bagBorder;
+				}
+			} else {
+				context.fillStyle = colorPalette.lightTheme.bagBorder;
+			}
+			
+			if (highlightedBagId === node.id) {
+				context.fillStyle = colorPalette.lightTheme.bagHighlight;
+			}
+
+			if (selectedNodeIds.has(node.id)) {
+				context.fillStyle = colorPalette.lightTheme.bagHighlight;
+			}
+
+			// context.fillStyle = colorPalette.lightTheme.vertexBorder;
 			context.font = "12px sans-serif";
 			const textMetrics = context.measureText(text);
 			context.fillText(text, x - textMetrics.width / 2, y + 4);
@@ -449,7 +471,11 @@ export default function CanvasDisplay() {
 					<canvas ref={canvasRef} className="w-full h-full" />
 					{showAddToGroupButton && (
 						<div className="absolute border-2 border-stone-300 bottom-1 left-1/2 -translate-x-1/2 h-[40px] rounded-lg flex items-center justify-between gap-2 px-4">
-							<Button size='sm' variant="ghost" className="text-stone-400">
+							<Button
+								size="sm"
+								variant="ghost"
+								className="text-stone-400"
+							>
 								Select as a group
 							</Button>
 						</div>
