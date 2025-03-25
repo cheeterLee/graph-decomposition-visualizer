@@ -32,6 +32,7 @@ import editorSlice from "./slices/editorSlice";
 import runnerSlice from "../algorithm-runner/slices/runnerSlice";
 import { useNavigate } from "@remix-run/react";
 import globalSlice from "~/globalSlice";
+import { colorPalette } from "~/lib/config";
 
 export default function SVGEditor() {
 	/* Following 2 lines could be removed, not using as this moment */
@@ -139,8 +140,10 @@ export default function SVGEditor() {
 			.classed("dragging", true)
 			.raise();
 
-		group.select("circle").attr("stroke", "#FF7F50");
-		group.select("text").attr("stroke", "#FF7F50");
+		group
+			.select("circle")
+			.attr("stroke", colorPalette.lightTheme.vertexDrag);
+		group.select("text").attr("stroke", colorPalette.lightTheme.vertexDrag);
 	};
 
 	const dragged = (event: d3.D3DragEvent<Element, Vertex, unknown>) => {
@@ -178,8 +181,12 @@ export default function SVGEditor() {
 			.classed("dragging", false)
 			.raise();
 
-		group.select("circle").attr("stroke", "#5f9ea0");
-		group.select("text").attr("stroke", "5f9ea0");
+		group
+			.select("circle")
+			.attr("stroke", colorPalette.lightTheme.vertexBorder);
+		group
+			.select("text")
+			.attr("stroke", colorPalette.lightTheme.vertexBorder);
 	};
 
 	const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -416,7 +423,7 @@ export default function SVGEditor() {
 		const linksGroup = svg
 			.append("g")
 			.attr("class", "link")
-			.attr("stroke", "#DEB887")
+			.attr("stroke", colorPalette.lightTheme.edge)
 			.attr("stroke-width", 5);
 
 		linksGroupRef.current = linksGroup.node();
@@ -424,9 +431,9 @@ export default function SVGEditor() {
 		const nodesGroup = svg
 			.append("g")
 			.attr("class", "node")
-			.attr("fill", "#fff")
-			.attr("stroke", "#5f9ea0")
-			// .attr("stroke-width", 3);
+			.attr("fill", colorPalette.lightTheme.vertexFill)
+			.attr("stroke", colorPalette.lightTheme.vertexBorder);
+		// .attr("stroke-width", 3);
 
 		nodesGroupRef.current = nodesGroup.node();
 
@@ -461,7 +468,7 @@ export default function SVGEditor() {
 			.attr("y1", (e) => vertices.find((v) => v.id === e.uId)?.cy ?? 0)
 			.attr("x2", (e) => vertices.find((v) => v.id === e.vId)?.cx ?? 0)
 			.attr("y2", (e) => vertices.find((v) => v.id === e.vId)?.cy ?? 0)
-			.attr("stroke", "#DEB887")
+			.attr("stroke", colorPalette.lightTheme.edge)
 			.attr("stroke-width", 3)
 			.on("click", function (event: MouseEvent, d) {
 				event.stopPropagation();
@@ -502,8 +509,8 @@ export default function SVGEditor() {
 					group
 						.append("circle")
 						.attr("r", 15)
-						.attr("fill", "#fff")
-						.attr("stroke", "#5f9ea0")
+						.attr("fill", colorPalette.lightTheme.vertexFill)
+						.attr("stroke", colorPalette.lightTheme.vertexBorder)
 						.attr("stroke-width", 3);
 
 					group
@@ -513,28 +520,42 @@ export default function SVGEditor() {
 						.attr("dominant-baseline", "central")
 						.attr("pointer-events", "none")
 						.attr("font-size", "15px")
-						.attr("fill", "#5f9ea0");
+						.attr("fill", colorPalette.lightTheme.vertexBorder);
 
 					return group;
 				},
 				(update) => {
 					update.select("circle").attr("stroke", function (d) {
-						if (d3.select(((this as SVGCircleElement).parentNode) as SVGGElement).classed("dragging")) {
-							return "#FF7F50";
+						if (
+							d3
+								.select(
+									(this as SVGCircleElement)
+										.parentNode as SVGGElement
+								)
+								.classed("dragging")
+						) {
+							return colorPalette.lightTheme.vertexDrag;
 						}
 						return hasHighlightedBag &&
 							!nodesInHightedBag.includes(d.id)
-							? "#FF6F61"
-							: "#5f9ea0";
+							? colorPalette.lightTheme.vertexHighlight
+							: colorPalette.lightTheme.vertexBorder;
 					});
 					update.select("text").attr("stroke", function (d) {
-						if (d3.select(((this as SVGTextElement).parentNode) as SVGGElement).classed("dragging")) {
-							return "#FF7F50";
+						if (
+							d3
+								.select(
+									(this as SVGTextElement)
+										.parentNode as SVGGElement
+								)
+								.classed("dragging")
+						) {
+							return colorPalette.lightTheme.vertexDrag;
 						}
 						return hasHighlightedBag &&
 							!nodesInHightedBag.includes(d.id)
-							? "#FF6F61"
-							: "#5f9ea0";
+							? colorPalette.lightTheme.vertexHighlight
+							: colorPalette.lightTheme.vertexBorder;
 					});
 					return update;
 				},

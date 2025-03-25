@@ -86,11 +86,12 @@ body {
 }
 
 .highlighted-node circle {
-	fill: #5f9ea0;
+	fill: oklch(0.709 0.01 56.259);
 }
 
 .highlighted-node text {
 	stroke: #fff;
+	/* stroke: oklch(0.709 0.01 56.259); */
 }
 
 .highlighted-edge {
@@ -98,6 +99,7 @@ body {
 }
 
 .glowing-node circle {
+	/* fill: oklch(0.709 0.01 56.259); */
 	fill: #fff;
 	stroke: #ff8c00;
 	filter: drop-shadow(0 0 3px rgba(250, 140, 0, 0.7));
