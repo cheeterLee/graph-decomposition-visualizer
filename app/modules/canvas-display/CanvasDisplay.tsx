@@ -114,15 +114,11 @@ export default function CanvasDisplay() {
 		}
 
 		if (clickedBag) {
-			dispatch(
-				globalSlice.actions.setHighlightedBag({
-					id: clickedBag[0],
-					nodes: clickedBag[1],
-				})
-			);
+			setSelectedNodeIds(new Set([clickedBag[0]]));
+			dispatch(globalSlice.actions.setHasHighlightedBag(true));
+			setShowAddToGroupButton(true);
 		} else {
 			dispatch(globalSlice.actions.clearHighlight());
-			dispatch(editorSlice.actions.setHighlightedElement(null));
 		}
 	};
 
@@ -135,6 +131,15 @@ export default function CanvasDisplay() {
 		};
 	};
 
+	// abort selection if pointer drags out of bounds
+	const handleMouseLeave = () => {
+		if (selectionStart) {
+			setSelectionStart(null);
+			setSelectionRect(null);
+			setSelectedNodeIds(new Set());
+		}
+	};
+
 	const handleMouseDown = (e: MouseEvent) => {
 		dispatch(globalSlice.actions.clearHighlight());
 		isDraggingRef.current = false;
@@ -144,7 +149,8 @@ export default function CanvasDisplay() {
 	};
 
 	const handleMouseMove = (e: MouseEvent) => {
-		if (!selectionStart) return;
+		if (!selectionStart || !canvasRef.current) return;
+
 		isDraggingRef.current = true;
 		const { x, y } = toCanvasCoords(e);
 		const rect = {
@@ -369,6 +375,7 @@ export default function CanvasDisplay() {
 
 		if (selectionRect) {
 			context.save();
+			context.strokeStyle = colorPalette.lightTheme.bagBorder;
 			context.setLineDash([4]);
 			context.strokeRect(
 				selectionRect.x,
@@ -463,11 +470,13 @@ export default function CanvasDisplay() {
 		canvas.addEventListener("mousedown", handleMouseDown);
 		canvas.addEventListener("mousemove", handleMouseMove);
 		canvas.addEventListener("mouseup", handleMouseUp);
+		canvas.addEventListener("mouseleave", handleMouseLeave);
 
 		return () => {
 			canvas.removeEventListener("mousedown", handleMouseDown);
 			canvas.removeEventListener("mousemove", handleMouseMove);
 			canvas.removeEventListener("mouseup", handleMouseUp);
+			canvas.removeEventListener("mouseleave", handleMouseLeave);
 		};
 	}, [selectionStart, selectionRect, isViewRawMode]);
 

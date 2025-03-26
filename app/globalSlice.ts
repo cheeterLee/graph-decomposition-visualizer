@@ -53,9 +53,9 @@ const globalSlice = createSlice({
 		setHighlightedNodeId: (state, action: PayloadAction<number>) => {
 			state.highlightedNodeId = action.payload;
 		},
-		// setHasHighlightedBag: (state, action: PayloadAction<boolean>) => {
-		// 	state.hasHighlightedBag = action.payload;
-		// },
+		setHasHighlightedBag: (state, action: PayloadAction<boolean>) => {
+			state.hasHighlightedBag = action.payload;
+		},
 		// setHighlightedBagId: (state, action: PayloadAction<number>) => {
 		// 	state.highlightedBagId = action.payload;
 		// },
