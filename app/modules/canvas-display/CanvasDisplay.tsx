@@ -125,15 +125,13 @@ export default function CanvasDisplay() {
 			// setSelectedNodeIds(new Set([clickedBag[0]]));
 			const bagId = clickedBag[0];
 			dispatch(globalSlice.actions.selectBags([bagId]));
-			
+
 			const nodes = clickedBag[1];
 			dispatch(globalSlice.actions.setGroupOfHighlightedNodes(nodes));
-
-			// dispatch(globalSlice.actions.setHasHighlightedBag(true));
-			// setShowAddToGroupButton(true);
-			// dispatch(globalSlice.actions.setShowAddToGroupButton(true));
 		} else {
 			dispatch(globalSlice.actions.clearHighlight());
+			// TODO: temporary fix, need to decouple editor slice in the future
+			dispatch(editorSlice.actions.setHighlightedElement(null))
 		}
 	};
 
@@ -195,16 +193,9 @@ export default function CanvasDisplay() {
 				node.y <= selectionRect.y + selectionRect.height;
 			if (insideX && insideY) newlySelected.add(node.id);
 		}
-		// setSelectedNodeIds(newlySelected);
 		if (newlySelected.size > 0) {
-			// setShowAddToGroupButton(true);
-			// dispatch(globalSlice.actions.setShowAddToGroupButton(true));
-			dispatch(globalSlice.actions.selectBags([...newlySelected]))
+			dispatch(globalSlice.actions.selectBags([...newlySelected]));
 		}
-		// dispatch(
-		// 	globalSlice.actions.setSelectedBagIds(Array.from(newlySelected))
-		// ); // you'll need to add this action
-
 		const newNodesInHighlightedBags = [
 			...bags.reduce((prev, curr) => {
 				if (newlySelected.has(curr[0])) {
