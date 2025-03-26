@@ -2,7 +2,7 @@ import React from "react";
 import { useAppDispatch, useAppSelector } from "~/hooks/reduxHooks";
 import * as d3 from "d3";
 import { Button } from "~/components/ui/button";
-import { ChevronLeft, Copy, Download, Eclipse, FileText } from "lucide-react";
+import { ChevronLeft, Copy, Download, Eclipse, FileText, RotateCcw } from "lucide-react";
 import { Link } from "@remix-run/react";
 import displaySlice from "./slices/displaySlice";
 import globalSlice from "~/globalSlice";
@@ -45,6 +45,7 @@ export default function CanvasDisplay() {
 		highlightedBags,
 		selectedBagIds,
 		highlightingColorIdx,
+		showAddToGroupButton,
 	} = useAppSelector((state) => state.global);
 
 	const [simulationDone, setSimulationDone] = React.useState(false);
@@ -63,8 +64,8 @@ export default function CanvasDisplay() {
 		new Set()
 	);
 
-	const [showAddToGroupButton, setShowAddToGroupButton] =
-		React.useState<boolean>(false);
+	// const [showAddToGroupButton, setShowAddToGroupButton] =
+	// 	React.useState<boolean>(false);
 
 	const dispatch = useAppDispatch();
 
@@ -116,7 +117,8 @@ export default function CanvasDisplay() {
 		if (clickedBag) {
 			setSelectedNodeIds(new Set([clickedBag[0]]));
 			dispatch(globalSlice.actions.setHasHighlightedBag(true));
-			setShowAddToGroupButton(true);
+			// setShowAddToGroupButton(true);
+			dispatch(globalSlice.actions.setShowAddToGroupButton(true));
 		} else {
 			dispatch(globalSlice.actions.clearHighlight());
 		}
@@ -181,7 +183,8 @@ export default function CanvasDisplay() {
 		}
 		setSelectedNodeIds(newlySelected);
 		if (newlySelected.size > 0) {
-			setShowAddToGroupButton(true);
+			// setShowAddToGroupButton(true);
+			dispatch(globalSlice.actions.setShowAddToGroupButton(true));
 		}
 		// dispatch(
 		// 	globalSlice.actions.setSelectedBagIds(Array.from(newlySelected))
@@ -239,7 +242,6 @@ export default function CanvasDisplay() {
 
 	const handleSelectAsAGroup = (e: React.MouseEvent) => {
 		e.stopPropagation();
-		console.log("clicked");
 		dispatch(
 			globalSlice.actions.selectAsGroup({
 				newGroupBags: [...selectedNodeIds],
@@ -247,7 +249,14 @@ export default function CanvasDisplay() {
 			})
 		);
 		setSelectedNodeIds(new Set<number>());
-		setShowAddToGroupButton(false);
+		// setShowAddToGroupButton(false);
+		dispatch(globalSlice.actions.setShowAddToGroupButton(false));
+	};
+
+	const handleClearHighlights = (e: React.MouseEvent) => {
+		e.stopPropagation();
+		dispatch(globalSlice.actions.clearGroupsHighlighting());
+		dispatch(globalSlice.actions.clearHighlight());
 	};
 
 	const drawCanvas = () => {
@@ -492,43 +501,57 @@ export default function CanvasDisplay() {
 
 	return (
 		<div className="relative border-2 border-stone-300 flex-1 h-[700px] rounded-lg">
-			<div className="absolute w-full top-1 px-2 flex items-center justify-between">
-				<Button asChild variant="outline" className="text-stone-400">
-					<Link to="/app">
-						<ChevronLeft className="text-stone-400" />
-						Back
-					</Link>
-				</Button>
-				<div className="flex items-center gap-1">
-					{isViewRawMode ? (
-						<Button
-							onClick={handleViewGraph}
-							variant="outline"
-							className="text-stone-400"
-						>
-							<Eclipse className="text-stone-400" />
-							View Graph
-						</Button>
-					) : (
-						<Button
-							onClick={handleViewRaw}
-							variant="outline"
-							className="text-stone-400"
-						>
-							<FileText className="text-stone-400" />
-							View Raw
-						</Button>
-					)}
-
+			<div className="absolute w-full top-1 px-2 flex flex-col items-end gap-2">
+				<div className="flex w-full justify-between">
 					<Button
-						onClick={handleDownload}
+						asChild
 						variant="outline"
 						className="text-stone-400"
 					>
-						<Download className="text-stone-400" />
-						Download Raw Result
+						<Link to="/app">
+							<ChevronLeft className="text-stone-400" />
+							Back
+						</Link>
 					</Button>
+					<div className="flex items-center gap-1">
+						{isViewRawMode ? (
+							<Button
+								onClick={handleViewGraph}
+								variant="outline"
+								className="text-stone-400"
+							>
+								<Eclipse className="text-stone-400" />
+								View Graph
+							</Button>
+						) : (
+							<Button
+								onClick={handleViewRaw}
+								variant="outline"
+								className="text-stone-400"
+							>
+								<FileText className="text-stone-400" />
+								View Raw
+							</Button>
+						)}
+
+						<Button
+							onClick={handleDownload}
+							variant="outline"
+							className="text-stone-400"
+						>
+							<Download className="text-stone-400" />
+							Download Raw Result
+						</Button>
+					</div>
 				</div>
+				<Button
+					onClick={handleClearHighlights}
+					variant="outline"
+					className="text-stone-400"
+					size='icon'
+				>
+					<RotateCcw className="text-stone-400" />
+				</Button>
 			</div>
 
 			{isViewRawMode ? (
