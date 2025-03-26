@@ -518,12 +518,12 @@ export default function CanvasDisplay() {
 
 	return (
 		<div className="relative border-2 border-stone-300 flex-1 h-[700px] rounded-lg">
-			<div className="absolute w-full top-1 px-2 flex flex-col items-end gap-2">
+			<div className="absolute w-full top-1 px-2 flex flex-col items-end gap-2 pointer-events-none">
 				<div className="flex w-full justify-between">
 					<Button
 						asChild
 						variant="outline"
-						className="text-stone-400"
+						className="text-stone-400 pointer-events-auto"
 					>
 						<Link to="/app">
 							<ChevronLeft className="text-stone-400" />
@@ -535,7 +535,7 @@ export default function CanvasDisplay() {
 							<Button
 								onClick={handleViewGraph}
 								variant="outline"
-								className="text-stone-400"
+								className="text-stone-400 pointer-events-auto"
 							>
 								<Eclipse className="text-stone-400" />
 								View Graph
@@ -544,7 +544,7 @@ export default function CanvasDisplay() {
 							<Button
 								onClick={handleViewRaw}
 								variant="outline"
-								className="text-stone-400"
+								className="text-stone-400 pointer-events-auto"
 							>
 								<FileText className="text-stone-400" />
 								View Raw
@@ -554,7 +554,7 @@ export default function CanvasDisplay() {
 						<Button
 							onClick={handleDownload}
 							variant="outline"
-							className="text-stone-400"
+							className="text-stone-400 pointer-events-auto"
 						>
 							<Download className="text-stone-400" />
 							Download Raw Result
@@ -564,7 +564,7 @@ export default function CanvasDisplay() {
 				<Button
 					onClick={handleClearHighlights}
 					variant="outline"
-					className="text-stone-400"
+					className="text-stone-400 pointer-events-auto"
 					size="icon"
 				>
 					<RotateCcw className="text-stone-400" />
@@ -580,7 +580,7 @@ export default function CanvasDisplay() {
 						<Button
 							onClick={handleCopyRawData}
 							variant="outline"
-							className="absolute top-1 right-1"
+							className="absolute top-1 right-1 pointer-events-auto"
 							size="icon"
 						>
 							<Copy className="text-stone-400" />
@@ -598,7 +598,7 @@ export default function CanvasDisplay() {
 							<Button
 								size="sm"
 								variant="ghost"
-								className="text-stone-400"
+								className="text-stone-400 pointer-events-auto"
 								onClick={handleSelectAsAGroup}
 							>
 								Select as a group
