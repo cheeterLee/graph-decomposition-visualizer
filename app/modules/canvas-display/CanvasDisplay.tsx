@@ -2,7 +2,14 @@ import React from "react";
 import { useAppDispatch, useAppSelector } from "~/hooks/reduxHooks";
 import * as d3 from "d3";
 import { Button } from "~/components/ui/button";
-import { ChevronLeft, Copy, Download, Eclipse, FileText, RotateCcw } from "lucide-react";
+import {
+	ChevronLeft,
+	Copy,
+	Download,
+	Eclipse,
+	FileText,
+	RotateCcw,
+} from "lucide-react";
 import { Link } from "@remix-run/react";
 import displaySlice from "./slices/displaySlice";
 import globalSlice from "~/globalSlice";
@@ -60,9 +67,9 @@ export default function CanvasDisplay() {
 		width: number;
 		height: number;
 	} | null>(null);
-	const [selectedNodeIds, setSelectedNodeIds] = React.useState<Set<number>>(
-		new Set()
-	);
+	// const [selectedNodeIds, setSelectedNodeIds] = React.useState<Set<number>>(
+	// 	new Set()
+	// );
 
 	// const [showAddToGroupButton, setShowAddToGroupButton] =
 	// 	React.useState<boolean>(false);
@@ -115,10 +122,16 @@ export default function CanvasDisplay() {
 		}
 
 		if (clickedBag) {
-			setSelectedNodeIds(new Set([clickedBag[0]]));
-			dispatch(globalSlice.actions.setHasHighlightedBag(true));
+			// setSelectedNodeIds(new Set([clickedBag[0]]));
+			const bagId = clickedBag[0];
+			dispatch(globalSlice.actions.selectBags([bagId]));
+			
+			const nodes = clickedBag[1];
+			dispatch(globalSlice.actions.setGroupOfHighlightedNodes(nodes));
+
+			// dispatch(globalSlice.actions.setHasHighlightedBag(true));
 			// setShowAddToGroupButton(true);
-			dispatch(globalSlice.actions.setShowAddToGroupButton(true));
+			// dispatch(globalSlice.actions.setShowAddToGroupButton(true));
 		} else {
 			dispatch(globalSlice.actions.clearHighlight());
 		}
@@ -138,7 +151,8 @@ export default function CanvasDisplay() {
 		if (selectionStart) {
 			setSelectionStart(null);
 			setSelectionRect(null);
-			setSelectedNodeIds(new Set());
+			// TODO: may cause bug in selection
+			// setSelectedNodeIds(new Set());
 		}
 	};
 
@@ -181,10 +195,11 @@ export default function CanvasDisplay() {
 				node.y <= selectionRect.y + selectionRect.height;
 			if (insideX && insideY) newlySelected.add(node.id);
 		}
-		setSelectedNodeIds(newlySelected);
+		// setSelectedNodeIds(newlySelected);
 		if (newlySelected.size > 0) {
 			// setShowAddToGroupButton(true);
-			dispatch(globalSlice.actions.setShowAddToGroupButton(true));
+			// dispatch(globalSlice.actions.setShowAddToGroupButton(true));
+			dispatch(globalSlice.actions.selectBags([...newlySelected]))
 		}
 		// dispatch(
 		// 	globalSlice.actions.setSelectedBagIds(Array.from(newlySelected))
@@ -244,13 +259,15 @@ export default function CanvasDisplay() {
 		e.stopPropagation();
 		dispatch(
 			globalSlice.actions.selectAsGroup({
-				newGroupBags: [...selectedNodeIds],
+				// TODO: unnecessary param
+				newGroupBags: [...selectedBagIds],
 				newGroupNodes: nodesInHightedBag,
 			})
 		);
-		setSelectedNodeIds(new Set<number>());
+		// setSelectedNodeIds(new Set<number>());
 		// setShowAddToGroupButton(false);
-		dispatch(globalSlice.actions.setShowAddToGroupButton(false));
+		// dispatch(globalSlice.actions.setShowAddToGroupButton(false));
+		dispatch(globalSlice.actions.resetSelectBags());
 	};
 
 	const handleClearHighlights = (e: React.MouseEvent) => {
@@ -322,7 +339,7 @@ export default function CanvasDisplay() {
 					colorPalette.lightTheme.colorGroups[highlightingColorIdx];
 			}
 
-			if (selectedNodeIds.has(node.id)) {
+			if (selectedBagIds.includes(node.id)) {
 				context.fillStyle = colorPalette.lightTheme.bagFill;
 				// context.strokeStyle = colorPalette.lightTheme.bagHighlight;
 				context.strokeStyle =
@@ -366,7 +383,7 @@ export default function CanvasDisplay() {
 					colorPalette.lightTheme.colorGroups[highlightingColorIdx];
 			}
 
-			if (selectedNodeIds.has(node.id)) {
+			if (selectedBagIds.includes(node.id)) {
 				context.fillStyle =
 					colorPalette.lightTheme.colorGroups[highlightingColorIdx];
 			}
@@ -493,7 +510,7 @@ export default function CanvasDisplay() {
 		drawCanvas();
 	}, [
 		selectionStart,
-		selectedNodeIds,
+		selectedBagIds,
 		selectionRect,
 		highlightedNodeId,
 		highlightedBagId,
@@ -548,7 +565,7 @@ export default function CanvasDisplay() {
 					onClick={handleClearHighlights}
 					variant="outline"
 					className="text-stone-400"
-					size='icon'
+					size="icon"
 				>
 					<RotateCcw className="text-stone-400" />
 				</Button>

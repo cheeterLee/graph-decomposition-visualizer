@@ -81,8 +81,16 @@ const globalSlice = createSlice({
 			state.nodesInHightedBag = action.payload;
 		},
 
-		setSelectedBagIds: (state, action: PayloadAction<number[]>) => {
+		selectBags: (state, action: PayloadAction<number[]>) => {
 			state.selectedBagIds = action.payload;
+			state.hasHighlightedBag = true;
+			state.showAddToGroupButton = true;
+		},
+
+		resetSelectBags: (state, action: PayloadAction<void>) => {
+			state.selectedBagIds = [],
+			state.hasHighlightedBag = false
+			state.showAddToGroupButton = false
 		},
 
 		setHighlightedBag: (
@@ -102,6 +110,8 @@ const globalSlice = createSlice({
 
 			state.hasHighlightedBag = false;
 			state.showAddToGroupButton = false;
+			state.selectedBagIds = []
+
 			// state.highlightingColorIdx = 0;
 			// state.highlightedGroups = [];
 			// state.highlightedBags = [];
