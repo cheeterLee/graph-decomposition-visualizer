@@ -12,5 +12,11 @@ export const colorPalette = {
 		bagHighlight: "oklch(0.75 0.183 55.934)",
 		bagBorder: "oklch(0.709 0.01 56.259)",
 		bagFill: "oklch(0.985 0.001 106.423)",
+
+		colorGroups: [
+			"oklch(0.75 0.183 55.934)",
+			"oklch(0.609 0.126 221.723)",
+			"oklch(0.648 0.2 131.684)",
+		],
 	},
 };

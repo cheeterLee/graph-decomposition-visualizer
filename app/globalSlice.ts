@@ -12,6 +12,10 @@ export interface RunnerState {
 	highlightedBagId: number;
 	nodesInHightedBag: number[];
 
+	highlightingColorIdx: number;
+	highlightedGroups: number[][];
+	highlightedBags: number[][];
+
 	selectedBagIds: number[];
 }
 
@@ -25,6 +29,10 @@ const initialState: RunnerState = {
 	hasHighlightedBag: false,
 	highlightedBagId: -1,
 	nodesInHightedBag: [],
+
+	highlightingColorIdx: 0,
+	highlightedGroups: [],
+	highlightedBags: [],
 
 	selectedBagIds: [],
 };
@@ -77,11 +85,35 @@ const globalSlice = createSlice({
 		},
 
 		clearHighlight: (state) => {
-			state.hasHighlightedBag = false;
 			state.highlightedBagId = -1;
 			state.nodesInHightedBag = [];
 			state.hasHighlightedNode = false;
 			state.highlightedNodeId = -1;
+
+			state.hasHighlightedBag = false;
+			// state.highlightingColorIdx = 0;
+			// state.highlightedGroups = [];
+			// state.highlightedBags = [];
+		},
+
+		selectAsGroup: (
+			state,
+			action: PayloadAction<{
+				newGroupNodes: number[];
+				newGroupBags: number[];
+			}>
+		) => {
+			state.hasHighlightedBag = true;
+			state.highlightedGroups.push(action.payload.newGroupNodes);
+			state.highlightedBags.push(action.payload.newGroupBags);
+			state.highlightingColorIdx += 1;
+		},
+
+		clearGroupsHighlighting: (state) => {
+			state.hasHighlightedBag = false;
+			state.highlightingColorIdx = 0;
+			state.highlightedGroups = [];
+			state.highlightedBags = [];
 		},
 	},
 });

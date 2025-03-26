@@ -42,7 +42,9 @@ export default function CanvasDisplay() {
 		hasHighlightedBag,
 		highlightedBagId,
 		nodesInHightedBag,
+		highlightedBags,
 		selectedBagIds,
+		highlightingColorIdx,
 	} = useAppSelector((state) => state.global);
 
 	const [simulationDone, setSimulationDone] = React.useState(false);
@@ -134,6 +136,7 @@ export default function CanvasDisplay() {
 	};
 
 	const handleMouseDown = (e: MouseEvent) => {
+		dispatch(globalSlice.actions.clearHighlight());
 		isDraggingRef.current = false;
 		const { x, y } = toCanvasCoords(e);
 		setSelectionStart({ x, y });
@@ -178,9 +181,7 @@ export default function CanvasDisplay() {
 		// 	globalSlice.actions.setSelectedBagIds(Array.from(newlySelected))
 		// ); // you'll need to add this action
 
-		console.log("newly", newlySelected);
-
-		const nodesInHighlightedBags = [
+		const newNodesInHighlightedBags = [
 			...bags.reduce((prev, curr) => {
 				if (newlySelected.has(curr[0])) {
 					for (const el of curr[1]) {
@@ -191,11 +192,9 @@ export default function CanvasDisplay() {
 			}, new Set<number>()),
 		];
 
-		console.log("nodes in highlighted", nodesInHighlightedBags);
-
 		dispatch(
 			globalSlice.actions.setGroupOfHighlightedNodes(
-				nodesInHighlightedBags
+				newNodesInHighlightedBags
 			)
 		);
 
@@ -230,6 +229,19 @@ export default function CanvasDisplay() {
 
 	const handleCopyRawData = () => {
 		window.navigator.clipboard.writeText(rawData);
+	};
+
+	const handleSelectAsAGroup = (e: React.MouseEvent) => {
+		e.stopPropagation();
+		console.log("clicked");
+		dispatch(
+			globalSlice.actions.selectAsGroup({
+				newGroupBags: [...selectedNodeIds],
+				newGroupNodes: nodesInHightedBag,
+			})
+		);
+		setSelectedNodeIds(new Set<number>());
+		setShowAddToGroupButton(false);
 	};
 
 	const drawCanvas = () => {
@@ -290,12 +302,30 @@ export default function CanvasDisplay() {
 
 			if (hasHighlightedBag && highlightedBagId == node.id) {
 				context.fillStyle = colorPalette.lightTheme.bagFill;
-				context.strokeStyle = colorPalette.lightTheme.bagHighlight;
+				// context.strokeStyle = colorPalette.lightTheme.bagHighlight;
+				context.strokeStyle =
+					colorPalette.lightTheme.colorGroups[highlightingColorIdx];
 			}
 
 			if (selectedNodeIds.has(node.id)) {
 				context.fillStyle = colorPalette.lightTheme.bagFill;
-				context.strokeStyle = colorPalette.lightTheme.bagHighlight;
+				// context.strokeStyle = colorPalette.lightTheme.bagHighlight;
+				context.strokeStyle =
+					colorPalette.lightTheme.colorGroups[highlightingColorIdx];
+			}
+
+			// existed highlighting
+			let colorIdx = -1;
+			for (let i = 0; i < highlightedBags.length; i++) {
+				if (highlightedBags[i].includes(node.id)) {
+					colorIdx = i;
+				}
+			}
+
+			// indicates if current node should be highlighted
+			if (colorIdx !== -1) {
+				context.strokeStyle =
+					colorPalette.lightTheme.colorGroups[colorIdx];
 			}
 
 			context.fill();
@@ -305,7 +335,10 @@ export default function CanvasDisplay() {
 			const text = values.join(",");
 			if (hasHighlightedNode) {
 				if (values.includes(highlightedNodeId)) {
-					context.fillStyle = colorPalette.lightTheme.bagHighlight;
+					context.fillStyle =
+						colorPalette.lightTheme.colorGroups[
+							highlightingColorIdx
+						];
 				} else {
 					context.fillStyle = colorPalette.lightTheme.bagBorder;
 				}
@@ -314,11 +347,18 @@ export default function CanvasDisplay() {
 			}
 
 			if (highlightedBagId === node.id) {
-				context.fillStyle = colorPalette.lightTheme.bagHighlight;
+				context.fillStyle =
+					colorPalette.lightTheme.colorGroups[highlightingColorIdx];
 			}
 
 			if (selectedNodeIds.has(node.id)) {
-				context.fillStyle = colorPalette.lightTheme.bagHighlight;
+				context.fillStyle =
+					colorPalette.lightTheme.colorGroups[highlightingColorIdx];
+			}
+
+			if (colorIdx !== -1) {
+				context.fillStyle =
+					colorPalette.lightTheme.colorGroups[colorIdx];
 			}
 
 			// context.fillStyle = colorPalette.lightTheme.vertexBorder;
@@ -510,6 +550,7 @@ export default function CanvasDisplay() {
 								size="sm"
 								variant="ghost"
 								className="text-stone-400"
+								onClick={handleSelectAsAGroup}
 							>
 								Select as a group
 							</Button>

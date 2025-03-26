@@ -205,6 +205,7 @@ export default function SVGEditor() {
 		};
 
 		reader.readAsText(file);
+		dispatch(globalSlice.actions.clearGroupsHighlighting());
 	};
 
 	const parseGraph = (
