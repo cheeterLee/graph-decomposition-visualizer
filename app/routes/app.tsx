@@ -3,7 +3,7 @@
 */
 
 import type { MetaFunction } from "@remix-run/cloudflare";
-import { Outlet } from "@remix-run/react";
+import { Outlet, useLoaderData } from "@remix-run/react";
 import { populateDefaultGraphData } from "~/data/dataPopulation";
 import globalSlice from "~/globalSlice";
 import { useAppDispatch } from "~/hooks/reduxHooks";
@@ -21,8 +21,12 @@ export const meta: MetaFunction = () => {
 	];
 };
 
+export async function loader() {
+	return populateDefaultGraphData();
+}
+
 export default function App() {
-	// const data = useLoaderData<typeof loader>();
+	const data = useLoaderData<typeof loader>();
 
 	const dispatch = useAppDispatch();
 
@@ -38,8 +42,7 @@ export default function App() {
 			onClick={handleClickOnSpareScreen}
 			className="flex items-center justify-center gap-1 w-screen xl:px-16 lg:px-10 px-4 min-h-screen"
 		>
-			{/* <SVGEditor preData={data} /> */}
-			<SVGEditor />
+			<SVGEditor defaultRawData={data} />
 			<Outlet />
 		</main>
 	);

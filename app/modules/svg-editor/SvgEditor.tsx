@@ -34,7 +34,11 @@ import { useNavigate } from "@remix-run/react";
 import globalSlice from "~/globalSlice";
 import { colorPalette } from "~/lib/config";
 
-export default function SVGEditor() {
+export default function SVGEditor({
+	defaultRawData,
+}: {
+	defaultRawData: string;
+}) {
 	/* Following 2 lines could be removed, not using as this moment */
 	// const { data, g, e, maxId } = preData;
 	// const graph = useMap<number, Vertex>(Array.from(g.entries()));
@@ -73,8 +77,7 @@ export default function SVGEditor() {
 
 	const [isUploadDialogOpen, setIsUploadDialogOpen] =
 		React.useState<boolean>(false);
-	const [isRawMode, setIsRawMode] = React.useState<boolean>(false);
-	const [rawData, setRawData] = React.useState<string>("");
+	const [rawData, setRawData] = React.useState<string>(defaultRawData);
 	const [isFileUploadFinished, setIsFileUploadFinished] =
 		React.useState<boolean>(false);
 
@@ -273,7 +276,6 @@ export default function SVGEditor() {
 
 	const handleFileSubmit = () => {
 		const uploadedGraph = parseGraph(rawData);
-		// console.log("uploaded graph", uploadedGraph);
 
 		if (!svgContainerRef.current) return;
 
@@ -441,6 +443,10 @@ export default function SVGEditor() {
 		const svgNode = svg.node();
 		if (!svgNode) return;
 		svgContainerRef.current.appendChild(svgNode);
+
+		if (rawData !== "") {
+			handleFileSubmit();
+		}
 
 		return () => {
 			// cleanup svgNode appended to dom
