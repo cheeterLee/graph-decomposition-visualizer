@@ -53,6 +53,7 @@ export default function CanvasDisplay() {
 		selectedBagIds,
 		highlightingColorIdx,
 		showAddToGroupButton,
+		highlightedGroups,
 	} = useAppSelector((state) => state.global);
 
 	const [simulationDone, setSimulationDone] = React.useState(false);

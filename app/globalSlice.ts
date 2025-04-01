@@ -32,6 +32,7 @@ const initialState: RunnerState = {
 	highlightedBagId: -1,
 	nodesInHightedBag: [],
 
+	prevHighlightingColorIdx: -1,
 	highlightingColorIdx: 0,
 	highlightedGroups: [],
 	highlightedBags: [],
@@ -88,9 +89,9 @@ const globalSlice = createSlice({
 		},
 
 		resetSelectBags: (state, action: PayloadAction<void>) => {
-			state.selectedBagIds = [],
-			state.hasHighlightedBag = false
-			state.showAddToGroupButton = false
+			(state.selectedBagIds = []),
+				// state.hasHighlightedBag = true
+				(state.showAddToGroupButton = false);
 		},
 
 		setHighlightedBag: (
@@ -110,7 +111,7 @@ const globalSlice = createSlice({
 
 			state.hasHighlightedBag = false;
 			state.showAddToGroupButton = false;
-			state.selectedBagIds = []
+			state.selectedBagIds = [];
 
 			// state.highlightingColorIdx = 0;
 			// state.highlightedGroups = [];
@@ -124,15 +125,24 @@ const globalSlice = createSlice({
 				newGroupBags: number[];
 			}>
 		) => {
+			state.nodesInHightedBag = [];
+
 			state.hasHighlightedBag = true;
 			state.highlightedGroups.push(action.payload.newGroupNodes);
 			state.highlightedBags.push(action.payload.newGroupBags);
+			
+			state.prevHighlightingColorIdx = state.highlightingColorIdx,
 			state.highlightingColorIdx += 1;
 		},
+
+		// setHighlightingColorIdx: (state) => {
+		// 	state.highlightingColorIdx += 1;
+		// },
 
 		clearGroupsHighlighting: (state) => {
 			state.hasHighlightedBag = false;
 			state.highlightingColorIdx = 0;
+			state.prevHighlightingColorIdx = -1;
 			state.highlightedGroups = [];
 			state.highlightedBags = [];
 		},

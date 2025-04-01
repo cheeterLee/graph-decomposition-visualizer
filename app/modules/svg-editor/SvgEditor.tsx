@@ -52,9 +52,14 @@ export default function SVGEditor({
 		highlightedElement,
 	} = useAppSelector((state: RootState) => state.editor);
 
-	const { hasResult, hasHighlightedBag, nodesInHightedBag } = useAppSelector(
-		(state: RootState) => state.global
-	);
+	const {
+		hasResult,
+		hasHighlightedBag,
+		nodesInHightedBag,
+		highlightedGroups,
+		prevHighlightingColorIdx,
+		highlightingColorIdx,
+	} = useAppSelector((state: RootState) => state.global);
 
 	const dispatch = useAppDispatch();
 
@@ -515,6 +520,7 @@ export default function SVGEditor({
 
 					group
 						.append("circle")
+						.attr("class", "base-circle")
 						.attr("r", 15)
 						.attr("fill", colorPalette.lightTheme.vertexFill)
 						.attr("stroke", colorPalette.lightTheme.vertexBorder)
@@ -532,22 +538,67 @@ export default function SVGEditor({
 					return group;
 				},
 				(update) => {
-					update.select("circle").attr("stroke", function (d) {
-						if (
-							d3
-								.select(
-									(this as SVGCircleElement)
-										.parentNode as SVGGElement
-								)
-								.classed("dragging")
+
+					update.each(function (d) {
+						const nodeGroup = d3.select(this);
+						const baseCircle =
+							nodeGroup.select("circle.base-circle");
+						// Update the base circle stroke based on dragging / highlighted state.
+						if (nodeGroup.classed("dragging")) {
+							baseCircle.attr(
+								"stroke",
+								colorPalette.lightTheme.vertexDrag
+							);
+						} else if (
+							highlightedGroups.length === 0 &&
+							nodesInHightedBag.length === 0
 						) {
-							return colorPalette.lightTheme.vertexDrag;
-						}
-						return hasHighlightedBag &&
+							baseCircle.attr(
+								"stroke",
+								colorPalette.lightTheme.vertexBorder
+							);
+						} else if (
+							nodesInHightedBag.length !== 0 &&
 							nodesInHightedBag.includes(d.id)
-							? colorPalette.lightTheme.vertexHighlight
-							: colorPalette.lightTheme.vertexBorder;
+						) {
+							baseCircle.attr(
+								"stroke",
+								colorPalette.lightTheme.colorGroups[
+									highlightingColorIdx
+								]
+							);
+						}
+						
+
+						nodeGroup.selectAll("circle.extra-highlight").remove();
+						let level = 0;
+						for (let i = 0; i < highlightedGroups.length; i++) {
+							const group = highlightedGroups[i];
+							if (group.includes(d.id)) {
+								if (level === 0) {
+									baseCircle.attr(
+										"stroke",
+										colorPalette.lightTheme.colorGroups[i]
+									);
+								} else {
+									d3.select(this)
+										.append("circle")
+										.attr("class", "extra-highlight")
+										.attr("r", 15 + 5 * level)
+										.attr("fill", "none")
+										.attr(
+											"stroke",
+											colorPalette.lightTheme.colorGroups[
+												i
+											]
+										)
+										.attr("stroke-width", 3);
+								}
+								level += 1;
+							}
+						}
 					});
+
 					update.select("text").attr("stroke", function (d) {
 						if (
 							d3
@@ -561,7 +612,9 @@ export default function SVGEditor({
 						}
 						return hasHighlightedBag &&
 							nodesInHightedBag.includes(d.id)
-							? colorPalette.lightTheme.vertexHighlight
+							? colorPalette.lightTheme.colorGroups[
+									highlightingColorIdx
+							  ]
 							: colorPalette.lightTheme.vertexBorder;
 					});
 					return update;
@@ -695,6 +748,7 @@ export default function SVGEditor({
 		edgesSet,
 		nodesInHightedBag,
 		hasHighlightedBag,
+		highlightedGroups,
 	]);
 
 	return (
