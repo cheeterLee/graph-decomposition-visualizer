@@ -556,30 +556,27 @@ export default function SVGEditor({
 								"stroke",
 								colorPalette.lightTheme.vertexBorder
 							);
-						} 
-						// else if (
-						// 	nodesInHightedBag.length !== 0 &&
-						// 	nodesInHightedBag.includes(d.id)
-						// ) {
-						// 	baseCircle.attr(
-						// 		"stroke",
-						// 		colorPalette.lightTheme.colorGroups[
-						// 			highlightingColorIdx
-						// 		]
-						// 	);
-						// }
-
+						}
+						
 						if (
 							previewHighlightedGroups.length >
 							highlightedGroups.length
 						) {
-							console.log("run")
 							// render logic for preview highlighting
+							console.log("render when preview");
+							baseCircle.attr(
+								"stroke",
+								colorPalette.lightTheme.vertexBorder
+							);
 							nodeGroup
 								.selectAll("circle.extra-highlight")
 								.remove();
 							let level = 0;
-							for (let i = 0; i < previewHighlightedGroups.length; i++) {
+							for (
+								let i = 0;
+								i < previewHighlightedGroups.length;
+								i++
+							) {
 								const group = previewHighlightedGroups[i];
 								if (group.includes(d.id)) {
 									if (level === 0) {
@@ -607,9 +604,14 @@ export default function SVGEditor({
 							}
 						} else {
 							// render logic after group selection
+							console.log("render when not preview");
 							nodeGroup
 								.selectAll("circle.extra-highlight")
 								.remove();
+							baseCircle.attr(
+								"stroke",
+								colorPalette.lightTheme.vertexBorder
+							);
 							let level = 0;
 							for (let i = 0; i < highlightedGroups.length; i++) {
 								const group = highlightedGroups[i];

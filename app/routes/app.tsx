@@ -35,6 +35,9 @@ export default function App() {
 		dispatch(editorSlice.actions.exitAddEdgeMode());
 
 		dispatch(globalSlice.actions.clearHighlight());
+
+		// TODO: temporary fix to clear excessive preview highlight 
+		dispatch(globalSlice.actions.undoPreviewHighlighting());
 	};
 
 	return (

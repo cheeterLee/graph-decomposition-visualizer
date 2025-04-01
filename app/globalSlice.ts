@@ -86,8 +86,12 @@ const globalSlice = createSlice({
 			state.hasHighlightedBag = true;
 			state.nodesInHightedBag = action.payload;
 			// ensure that only previewing the next selection
-			if (state.previewHighlightedGroups.length - state.highlightedGroups.length > 0) {
-				state.previewHighlightedGroups.pop();		
+			if (
+				state.previewHighlightedGroups.length -
+					state.highlightedGroups.length >
+				0
+			) {
+				state.previewHighlightedGroups.pop();
 			}
 			state.previewHighlightedGroups.push(action.payload);
 		},
@@ -99,9 +103,9 @@ const globalSlice = createSlice({
 		},
 
 		resetSelectBags: (state, action: PayloadAction<void>) => {
-			(state.selectedBagIds = []),
-				// state.hasHighlightedBag = true
-				(state.showAddToGroupButton = false);
+			state.selectedBagIds = [];
+			// state.hasHighlightedBag = true
+			state.showAddToGroupButton = false;
 		},
 
 		setHighlightedBag: (
@@ -112,8 +116,12 @@ const globalSlice = createSlice({
 			state.nodesInHightedBag = action.payload.nodes;
 
 			// ensure that only previewing the next selection
-			if (state.previewHighlightedGroups.length - state.highlightedGroups.length > 0) {
-				state.previewHighlightedGroups.pop();		
+			if (
+				state.previewHighlightedGroups.length -
+					state.highlightedGroups.length >
+				0
+			) {
+				state.previewHighlightedGroups.pop();
 			}
 			state.previewHighlightedGroups.push(action.payload.nodes);
 
@@ -134,9 +142,12 @@ const globalSlice = createSlice({
 		clearPreviewHighlight: (state) => {
 			state.previewHighlightedGroups = [];
 		},
-		
+
 		undoPreviewHighlighting: (state) => {
-			if (state.previewHighlightedGroups.length > state.highlightedGroups.length) {
+			if (
+				state.previewHighlightedGroups.length >
+				state.highlightedGroups.length
+			) {
 				state.previewHighlightedGroups.pop();
 			}
 		},

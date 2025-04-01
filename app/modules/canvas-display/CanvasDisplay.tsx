@@ -135,8 +135,8 @@ export default function CanvasDisplay() {
 			// TODO: temporary fix, need to decouple editor slice in the future
 			dispatch(editorSlice.actions.setHighlightedElement(null));
 
-			// TODO: temporary fix to clear preview highlight 
-			dispatch(globalSlice.actions.clearPreviewHighlight());
+			// TODO: temporary fix to clear excessive preview highlight 
+			dispatch(globalSlice.actions.undoPreviewHighlighting());
 		}
 	};
 
