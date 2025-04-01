@@ -550,7 +550,7 @@ export default function SVGEditor({
 							);
 						} else if (
 							highlightedGroups.length === 0 &&
-							nodesInHightedBag.length === 0
+							previewHighlightedGroups.length === 0
 						) {
 							baseCircle.attr(
 								"stroke",

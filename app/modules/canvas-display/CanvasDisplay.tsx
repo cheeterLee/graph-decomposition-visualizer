@@ -53,6 +53,7 @@ export default function CanvasDisplay() {
 		selectedBagIds,
 		highlightingColorIdx,
 		showAddToGroupButton,
+		previewHighlightedGroups,
 		highlightedGroups,
 	} = useAppSelector((state) => state.global);
 
@@ -132,7 +133,10 @@ export default function CanvasDisplay() {
 		} else {
 			dispatch(globalSlice.actions.clearHighlight());
 			// TODO: temporary fix, need to decouple editor slice in the future
-			dispatch(editorSlice.actions.setHighlightedElement(null))
+			dispatch(editorSlice.actions.setHighlightedElement(null));
+
+			// TODO: temporary fix to clear preview highlight 
+			dispatch(globalSlice.actions.clearPreviewHighlight());
 		}
 	};
 
@@ -157,6 +161,10 @@ export default function CanvasDisplay() {
 
 	const handleMouseDown = (e: MouseEvent) => {
 		dispatch(globalSlice.actions.clearHighlight());
+		// undo one step of preview highlighting if needed
+		dispatch(globalSlice.actions.undoPreviewHighlighting());
+		// TODO: temp fix
+		dispatch(editorSlice.actions.setHighlightedElement(null));
 		isDraggingRef.current = false;
 		const { x, y } = toCanvasCoords(e);
 		setSelectionStart({ x, y });

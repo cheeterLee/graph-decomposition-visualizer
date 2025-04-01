@@ -129,10 +129,16 @@ const globalSlice = createSlice({
 			state.hasHighlightedBag = false;
 			state.showAddToGroupButton = false;
 			state.selectedBagIds = [];
+		},
 
-			// state.highlightingColorIdx = 0;
-			// state.highlightedGroups = [];
-			// state.highlightedBags = [];
+		clearPreviewHighlight: (state) => {
+			state.previewHighlightedGroups = [];
+		},
+		
+		undoPreviewHighlighting: (state) => {
+			if (state.previewHighlightedGroups.length > state.highlightedGroups.length) {
+				state.previewHighlightedGroups.pop();
+			}
 		},
 
 		selectAsGroup: (
