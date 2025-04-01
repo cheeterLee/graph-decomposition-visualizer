@@ -13,7 +13,10 @@ export interface RunnerState {
 	nodesInHightedBag: number[];
 
 	highlightingColorIdx: number;
+
+	previewHighlightedGroups: number[][];
 	highlightedGroups: number[][];
+
 	highlightedBags: number[][];
 
 	selectedBagIds: number[];
@@ -32,9 +35,11 @@ const initialState: RunnerState = {
 	highlightedBagId: -1,
 	nodesInHightedBag: [],
 
-	prevHighlightingColorIdx: -1,
 	highlightingColorIdx: 0,
+
+	previewHighlightedGroups: [],
 	highlightedGroups: [],
+
 	highlightedBags: [],
 
 	selectedBagIds: [],
@@ -80,6 +85,11 @@ const globalSlice = createSlice({
 		) => {
 			state.hasHighlightedBag = true;
 			state.nodesInHightedBag = action.payload;
+			// ensure that only previewing the next selection
+			if (state.previewHighlightedGroups.length - state.highlightedGroups.length > 0) {
+				state.previewHighlightedGroups.pop();		
+			}
+			state.previewHighlightedGroups.push(action.payload);
 		},
 
 		selectBags: (state, action: PayloadAction<number[]>) => {
@@ -100,6 +110,13 @@ const globalSlice = createSlice({
 		) => {
 			state.hasHighlightedBag = true;
 			state.nodesInHightedBag = action.payload.nodes;
+
+			// ensure that only previewing the next selection
+			if (state.previewHighlightedGroups.length - state.highlightedGroups.length > 0) {
+				state.previewHighlightedGroups.pop();		
+			}
+			state.previewHighlightedGroups.push(action.payload.nodes);
+
 			state.highlightedBagId = action.payload.id;
 		},
 
@@ -128,10 +145,12 @@ const globalSlice = createSlice({
 			state.nodesInHightedBag = [];
 
 			state.hasHighlightedBag = true;
+
 			state.highlightedGroups.push(action.payload.newGroupNodes);
+			state.previewHighlightedGroups = state.highlightedGroups;
+
 			state.highlightedBags.push(action.payload.newGroupBags);
-			
-			state.prevHighlightingColorIdx = state.highlightingColorIdx,
+
 			state.highlightingColorIdx += 1;
 		},
 
@@ -142,8 +161,8 @@ const globalSlice = createSlice({
 		clearGroupsHighlighting: (state) => {
 			state.hasHighlightedBag = false;
 			state.highlightingColorIdx = 0;
-			state.prevHighlightingColorIdx = -1;
 			state.highlightedGroups = [];
+			state.previewHighlightedGroups = [];
 			state.highlightedBags = [];
 		},
 	},

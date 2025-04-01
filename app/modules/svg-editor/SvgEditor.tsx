@@ -56,8 +56,8 @@ export default function SVGEditor({
 		hasResult,
 		hasHighlightedBag,
 		nodesInHightedBag,
+		previewHighlightedGroups,
 		highlightedGroups,
-		prevHighlightingColorIdx,
 		highlightingColorIdx,
 	} = useAppSelector((state: RootState) => state.global);
 
@@ -538,7 +538,6 @@ export default function SVGEditor({
 					return group;
 				},
 				(update) => {
-
 					update.each(function (d) {
 						const nodeGroup = d3.select(this);
 						const baseCircle =
@@ -557,44 +556,86 @@ export default function SVGEditor({
 								"stroke",
 								colorPalette.lightTheme.vertexBorder
 							);
-						} else if (
-							nodesInHightedBag.length !== 0 &&
-							nodesInHightedBag.includes(d.id)
-						) {
-							baseCircle.attr(
-								"stroke",
-								colorPalette.lightTheme.colorGroups[
-									highlightingColorIdx
-								]
-							);
-						}
-						
+						} 
+						// else if (
+						// 	nodesInHightedBag.length !== 0 &&
+						// 	nodesInHightedBag.includes(d.id)
+						// ) {
+						// 	baseCircle.attr(
+						// 		"stroke",
+						// 		colorPalette.lightTheme.colorGroups[
+						// 			highlightingColorIdx
+						// 		]
+						// 	);
+						// }
 
-						nodeGroup.selectAll("circle.extra-highlight").remove();
-						let level = 0;
-						for (let i = 0; i < highlightedGroups.length; i++) {
-							const group = highlightedGroups[i];
-							if (group.includes(d.id)) {
-								if (level === 0) {
-									baseCircle.attr(
-										"stroke",
-										colorPalette.lightTheme.colorGroups[i]
-									);
-								} else {
-									d3.select(this)
-										.append("circle")
-										.attr("class", "extra-highlight")
-										.attr("r", 15 + 5 * level)
-										.attr("fill", "none")
-										.attr(
+						if (
+							previewHighlightedGroups.length >
+							highlightedGroups.length
+						) {
+							console.log("run")
+							// render logic for preview highlighting
+							nodeGroup
+								.selectAll("circle.extra-highlight")
+								.remove();
+							let level = 0;
+							for (let i = 0; i < previewHighlightedGroups.length; i++) {
+								const group = previewHighlightedGroups[i];
+								if (group.includes(d.id)) {
+									if (level === 0) {
+										baseCircle.attr(
 											"stroke",
 											colorPalette.lightTheme.colorGroups[
 												i
 											]
-										)
-										.attr("stroke-width", 3);
+										);
+									} else {
+										d3.select(this)
+											.append("circle")
+											.attr("class", "extra-highlight")
+											.attr("r", 15 + 5 * level)
+											.attr("fill", "none")
+											.attr(
+												"stroke",
+												colorPalette.lightTheme
+													.colorGroups[i]
+											)
+											.attr("stroke-width", 3);
+									}
+									level += 1;
 								}
-								level += 1;
+							}
+						} else {
+							// render logic after group selection
+							nodeGroup
+								.selectAll("circle.extra-highlight")
+								.remove();
+							let level = 0;
+							for (let i = 0; i < highlightedGroups.length; i++) {
+								const group = highlightedGroups[i];
+								if (group.includes(d.id)) {
+									if (level === 0) {
+										baseCircle.attr(
+											"stroke",
+											colorPalette.lightTheme.colorGroups[
+												i
+											]
+										);
+									} else {
+										d3.select(this)
+											.append("circle")
+											.attr("class", "extra-highlight")
+											.attr("r", 15 + 5 * level)
+											.attr("fill", "none")
+											.attr(
+												"stroke",
+												colorPalette.lightTheme
+													.colorGroups[i]
+											)
+											.attr("stroke-width", 3);
+									}
+									level += 1;
+								}
 							}
 						}
 					});
@@ -748,6 +789,7 @@ export default function SVGEditor({
 		edgesSet,
 		nodesInHightedBag,
 		hasHighlightedBag,
+		previewHighlightedGroups,
 		highlightedGroups,
 	]);
 
