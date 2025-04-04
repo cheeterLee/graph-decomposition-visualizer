@@ -966,6 +966,13 @@ export default function SVGEditor({
 					</Button>
 				</div>
 			)}
+
+			
+			<div className="pointer-events-none absolute border-2 rounded-lg border-stone-300 bottom-1 right-1 text-stone-400 text-xs p-2">
+				<p className="font-semibold">Actions supported</p>
+				<p>1. Highlight one node to view bags containing that node.</p>
+				<p>2. Highlight one edge to view bags containing that edge.</p>
+			</div>
 		</div>
 	);
 }

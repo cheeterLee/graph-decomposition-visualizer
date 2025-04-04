@@ -330,7 +330,8 @@ export default function CanvasDisplay() {
 				}
 			} else if (bagContainsHighlightedEdge == node.id) {
 				context.fillStyle = colorPalette.lightTheme.bagFill;
-				context.strokeStyle = colorPalette.lightTheme.colorGroups[highlightingColorIdx];
+				context.strokeStyle =
+					colorPalette.lightTheme.colorGroups[highlightingColorIdx];
 			} else {
 				context.fillStyle = colorPalette.lightTheme.vertexFill;
 				context.strokeStyle = colorPalette.lightTheme.vertexBorder;
@@ -615,6 +616,16 @@ export default function CanvasDisplay() {
 					)}
 				</div>
 			)}
+			<div className="pointer-events-none absolute border-2 rounded-lg border-stone-300 bottom-1 right-1 text-stone-400 text-xs p-2">
+				<p className="font-semibold">Actions supported</p>
+				<p>1. Highlight one bag to view nodes contained.</p>
+				<p>2. Highlight one group of bag to view nodes contained.</p>
+				<p>
+					3. Highlight several groups of bags to view nodes contained.
+				</p>
+				<p>4. View result in .td format.</p>
+				<p>5. Download result in .td format.</p>
+			</div>
 		</div>
 	);
 }
