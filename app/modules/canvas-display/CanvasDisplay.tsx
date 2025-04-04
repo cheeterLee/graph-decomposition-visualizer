@@ -43,6 +43,7 @@ export default function CanvasDisplay() {
 	);
 
 	const {
+		bagContainsHighlightedEdge,
 		hasResult,
 		hasHighlightedNode,
 		highlightedNodeId,
@@ -135,7 +136,7 @@ export default function CanvasDisplay() {
 			// TODO: temporary fix, need to decouple editor slice in the future
 			dispatch(editorSlice.actions.setHighlightedElement(null));
 
-			// TODO: temporary fix to clear excessive preview highlight 
+			// TODO: temporary fix to clear excessive preview highlight
 			dispatch(globalSlice.actions.undoPreviewHighlighting());
 		}
 	};
@@ -327,6 +328,9 @@ export default function CanvasDisplay() {
 					context.fillStyle = colorPalette.lightTheme.vertexFill;
 					context.strokeStyle = colorPalette.lightTheme.vertexBorder;
 				}
+			} else if (bagContainsHighlightedEdge == node.id) {
+				context.fillStyle = colorPalette.lightTheme.bagFill;
+				context.strokeStyle = colorPalette.lightTheme.colorGroups[highlightingColorIdx];
 			} else {
 				context.fillStyle = colorPalette.lightTheme.vertexFill;
 				context.strokeStyle = colorPalette.lightTheme.vertexBorder;
@@ -374,6 +378,9 @@ export default function CanvasDisplay() {
 				} else {
 					context.fillStyle = colorPalette.lightTheme.bagBorder;
 				}
+			} else if (bagContainsHighlightedEdge === node.id) {
+				context.fillStyle =
+					colorPalette.lightTheme.colorGroups[highlightingColorIdx];
 			} else {
 				context.fillStyle = colorPalette.lightTheme.bagBorder;
 			}
@@ -514,6 +521,7 @@ export default function CanvasDisplay() {
 		selectionRect,
 		highlightedNodeId,
 		highlightedBagId,
+		bagContainsHighlightedEdge,
 	]);
 
 	return (

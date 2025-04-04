@@ -22,6 +22,8 @@ export interface RunnerState {
 	selectedBagIds: number[];
 
 	showAddToGroupButton: boolean;
+
+	bagContainsHighlightedEdge: number;
 }
 
 const initialState: RunnerState = {
@@ -45,6 +47,8 @@ const initialState: RunnerState = {
 	selectedBagIds: [],
 
 	showAddToGroupButton: false,
+
+	bagContainsHighlightedEdge: -1,
 };
 
 const globalSlice = createSlice({
@@ -137,6 +141,8 @@ const globalSlice = createSlice({
 			state.hasHighlightedBag = false;
 			state.showAddToGroupButton = false;
 			state.selectedBagIds = [];
+
+			state.bagContainsHighlightedEdge = -1;
 		},
 
 		clearPreviewHighlight: (state) => {
@@ -182,6 +188,16 @@ const globalSlice = createSlice({
 			state.previewHighlightedGroups = [];
 			state.highlightedBags = [];
 		},
+
+		highlightEdge: (state, action: PayloadAction<number>) => {
+			state.bagContainsHighlightedEdge = action.payload;
+			// state.hasHighlightedNode = true;
+			// let nodeId =
+		},
+
+		cancelHighlightEdge: (state) => {
+			state.bagContainsHighlightedEdge = -1;
+		}
 	},
 });
 

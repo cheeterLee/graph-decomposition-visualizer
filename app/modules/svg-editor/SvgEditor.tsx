@@ -61,6 +61,8 @@ export default function SVGEditor({
 		highlightingColorIdx,
 	} = useAppSelector((state: RootState) => state.global);
 
+	const { bags } = useAppSelector((state: RootState) => state.display);
+
 	const dispatch = useAppDispatch();
 
 	const edgesSet = useSet<string>();
@@ -493,6 +495,7 @@ export default function SVGEditor({
 					highlightedElement.id === edgeKey
 				) {
 					dispatch(editorSlice.actions.setHighlightedElement(null));
+					dispatch(globalSlice.actions.clearHighlight());
 				} else {
 					dispatch(
 						editorSlice.actions.setHighlightedElement({
@@ -500,6 +503,16 @@ export default function SVGEditor({
 							id: edgeKey,
 						})
 					);
+					const highlightedBag = bags.find(
+						([_, bagNodes]) =>
+							bagNodes.includes(d.uId) && bagNodes.includes(d.vId)
+					);
+					if (highlightedBag !== undefined) {
+						console.log("highlightedBagId", highlightedBag[0]);
+						dispatch(
+							globalSlice.actions.highlightEdge(highlightedBag[0])
+						);
+					}
 				}
 			})
 			.classed(
@@ -557,7 +570,7 @@ export default function SVGEditor({
 								colorPalette.lightTheme.vertexBorder
 							);
 						}
-						
+
 						if (
 							previewHighlightedGroups.length >
 							highlightedGroups.length
