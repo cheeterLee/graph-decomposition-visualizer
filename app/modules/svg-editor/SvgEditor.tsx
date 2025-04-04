@@ -59,6 +59,7 @@ export default function SVGEditor({
 		previewHighlightedGroups,
 		highlightedGroups,
 		highlightingColorIdx,
+		isInEditMode,
 	} = useAppSelector((state: RootState) => state.global);
 
 	const { bags } = useAppSelector((state: RootState) => state.display);
@@ -967,12 +968,24 @@ export default function SVGEditor({
 				</div>
 			)}
 
-			
-			<div className="pointer-events-none absolute border-2 rounded-lg border-stone-300 bottom-1 right-1 text-stone-400 text-xs p-2">
-				<p className="font-semibold">Actions supported</p>
-				<p>1. Highlight one node to view bags containing that node.</p>
-				<p>2. Highlight one edge to view bags containing that edge.</p>
-			</div>
+			{isInEditMode ? (
+				<div className="pointer-events-none absolute border-2 rounded-lg border-stone-300 bottom-1 right-1 text-stone-400 text-xs p-2">
+					<p className="font-semibold">Actions supported</p>
+					<p>1. Build or edit the graph.</p>
+					<p>2. Upload a .gr file that generates a graph.</p>
+					<p>3. Drag and drop nodes for a clearer layout.</p>
+				</div>
+			) : (
+				<div className="pointer-events-none absolute border-2 rounded-lg border-stone-300 bottom-1 right-1 text-stone-400 text-xs p-2">
+					<p className="font-semibold">Actions supported</p>
+					<p>
+						1. Highlight one node to view bags containing that node.
+					</p>
+					<p>
+						2. Highlight one edge to view bags containing that edge.
+					</p>
+				</div>
+			)}
 		</div>
 	);
 }

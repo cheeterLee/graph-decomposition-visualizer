@@ -72,7 +72,9 @@ export default function AlgorithmRunner() {
 				dispatch(displaySlice.actions.setNodes());
 				dispatch(displaySlice.actions.flushRawData());
 				// dispatch(runnerSlice.actions.setHasResult(true));
-				dispatch(globalSlice.actions.setHasResult(true))
+				dispatch(globalSlice.actions.setHasResult(true));
+
+				dispatch(globalSlice.actions.setIsInEditMode(false));
 
 				navigate("result");
 			}
@@ -86,6 +88,12 @@ export default function AlgorithmRunner() {
 		};
 	};
 
+	const handleShowResult = (e: React.SyntheticEvent) => {
+		e.preventDefault();
+		dispatch(globalSlice.actions.setIsInEditMode(false));
+		navigate("result");
+	};
+
 	return (
 		<div className="grid grid-rows-3 gap-1 flex-1 h-[700px] rounded-lg">
 			<div className="relative border-2 border-stone-300 w-full row-span-2 rounded-lg shadow-sm">
@@ -95,11 +103,11 @@ export default function AlgorithmRunner() {
 				<div className="absolute bottom-1 right-10 flex items-center gap-1">
 					{hasResult && (
 						<Button
-							asChild
 							className="bg-stone-700 hover:bg-stone-500
                 text-stone-50"
+							onClick={handleShowResult}
 						>
-							<Link to="/app/result">Show Result</Link>
+							Show Result
 						</Button>
 					)}
 

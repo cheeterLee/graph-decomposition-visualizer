@@ -10,7 +10,7 @@ import {
 	FileText,
 	RotateCcw,
 } from "lucide-react";
-import { Link } from "@remix-run/react";
+import { Link, useNavigate } from "@remix-run/react";
 import displaySlice from "./slices/displaySlice";
 import globalSlice from "~/globalSlice";
 import editorSlice from "../svg-editor/slices/editorSlice";
@@ -78,6 +78,8 @@ export default function CanvasDisplay() {
 	// 	React.useState<boolean>(false);
 
 	const dispatch = useAppDispatch();
+
+	const navigate = useNavigate();
 
 	const canvasRef = React.useRef<HTMLCanvasElement>(null);
 
@@ -525,19 +527,23 @@ export default function CanvasDisplay() {
 		bagContainsHighlightedEdge,
 	]);
 
+	const handleNavigateBack = (e: React.SyntheticEvent) => {
+		e.preventDefault();
+		dispatch(globalSlice.actions.setIsInEditMode(true));
+		navigate("/app");
+	};
+
 	return (
 		<div className="relative border-2 border-stone-300 flex-1 h-[700px] rounded-lg">
 			<div className="absolute w-full top-1 px-2 flex flex-col items-end gap-2 pointer-events-none">
 				<div className="flex w-full justify-between">
 					<Button
-						asChild
 						variant="outline"
 						className="text-stone-400 pointer-events-auto"
+						onClick={handleNavigateBack}
 					>
-						<Link to="/app">
-							<ChevronLeft className="text-stone-400" />
-							Back
-						</Link>
+						<ChevronLeft className="text-stone-400" />
+						Back
 					</Button>
 					<div className="flex items-center gap-1">
 						{isViewRawMode ? (

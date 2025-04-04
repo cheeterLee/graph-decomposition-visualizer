@@ -3,6 +3,8 @@ import type { PayloadAction } from "@reduxjs/toolkit";
 
 export interface RunnerState {
 	isColorBlindMode: boolean;
+	isInEditMode: boolean;
+
 	hasResult: boolean;
 
 	hasHighlightedNode: boolean;
@@ -28,6 +30,8 @@ export interface RunnerState {
 
 const initialState: RunnerState = {
 	isColorBlindMode: false,
+	isInEditMode: true,
+
 	hasResult: false,
 
 	hasHighlightedNode: false,
@@ -55,6 +59,10 @@ const globalSlice = createSlice({
 	name: "global",
 	initialState: initialState,
 	reducers: {
+		setIsInEditMode: (state, action: PayloadAction<boolean>) => {
+			state.isInEditMode = action.payload;
+		},
+
 		setIsColorBlindMode: (state, action: PayloadAction<boolean>) => {
 			state.isColorBlindMode = action.payload;
 		},
@@ -197,7 +205,7 @@ const globalSlice = createSlice({
 
 		cancelHighlightEdge: (state) => {
 			state.bagContainsHighlightedEdge = -1;
-		}
+		},
 	},
 });
 
