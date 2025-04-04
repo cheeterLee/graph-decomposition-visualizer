@@ -95,7 +95,8 @@ body {
 }
 
 .highlighted-edge {
-	stroke-width: 7;
+	stroke: #FF6F61;
+	stroke-width: 5;
 }
 
 .glowing-node circle {
