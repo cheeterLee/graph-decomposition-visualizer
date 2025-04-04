@@ -609,7 +609,8 @@ export default function CanvasDisplay() {
 				<div className="w-full h-full">
 					<canvas ref={canvasRef} className="w-full h-full" />
 					{showAddToGroupButton && (
-						<div className="absolute border-2 border-stone-300 bottom-1 left-1/2 -translate-x-1/2 h-[40px] rounded-lg flex items-center justify-between gap-2 px-4">
+						<div className="absolute border-2 border-stone-300 bottom-1 left-1/2 -translate-x-1/2
+						 h-[40px] rounded-lg flex items-center justify-between gap-2 px-4 z-20 bg-white">
 							<Button
 								size="sm"
 								variant="ghost"
@@ -622,7 +623,7 @@ export default function CanvasDisplay() {
 					)}
 				</div>
 			)}
-			<div className="pointer-events-none absolute border-2 rounded-lg border-stone-300 bottom-1 right-1 text-stone-400 text-xs p-2">
+			<div className="pointer-events-none absolute border-2 rounded-lg border-stone-300 bottom-1 right-1 text-stone-400 text-xs p-2 z-10">
 				<p className="font-semibold">Actions supported</p>
 				<p>1. Highlight one bag to view nodes contained.</p>
 				<p>2. Highlight one group of bag to view nodes contained.</p>
