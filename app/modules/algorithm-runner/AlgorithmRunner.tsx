@@ -8,6 +8,7 @@ import type { RootState } from "~/store";
 import { Loader2 } from "lucide-react";
 import displaySlice from "../canvas-display/slices/displaySlice";
 import globalSlice from "~/globalSlice";
+import { Separator } from "~/components/ui/separator";
 
 export default function AlgorithmRunner() {
 	const { isRunning } = useAppSelector((state: RootState) => state.runner);
@@ -76,7 +77,8 @@ export default function AlgorithmRunner() {
 
 				dispatch(globalSlice.actions.setIsInEditMode(false));
 
-				navigate("result");
+				// TODO: navigates fires twice when results exist and user clicks show result before the algorithm finishes running
+				navigate("/app/result");
 			}
 			dispatch(runnerSlice.actions.setIsRunning(false));
 		};
@@ -96,11 +98,60 @@ export default function AlgorithmRunner() {
 
 	return (
 		<div className="grid grid-rows-3 gap-1 flex-1 h-[700px] rounded-lg">
-			<div className="relative border-2 border-stone-300 w-full row-span-2 rounded-lg shadow-sm">
-				<div className="max-w-full max-h-full overflow-scroll">
+			<div className="relative border-2 border-stone-300 w-full row-span-3 rounded-lg shadow-sm">
+				{/* <div className="max-w-full max-h-full overflow-scroll">
 					<CodeSnippet />
+				</div> */}
+				<div className="w-full max-h-full px-8 py-8 overflow-scroll">
+					<p className="text-stone-400 mb-2">
+						Tree Width Decomposition
+					</p>
+					<Separator />
+					<p className="text-stone-400 my-2">
+						A tree width graph decomposition algorithm is a method
+						used to transform a graph into a tree-like structure
+						known as a tree decomposition. This decomposition
+						organizes the graph into interconnected groups of
+						vertices (often called "bags") that satisfy three main
+						properties: <br />
+						<br />
+						1. Every graph vertex appears in at least one bag.
+						<br />
+						2. Every edge of the graph is contained within at least
+						one bag. <br />
+						3. For any given vertex, the bags containing that vertex
+						form a connected subtree.
+						<br />
+						<br />
+						The tree width of the graph is determined by the size of
+						the largest bag minus one, and algorithms for tree
+						decomposition aim to minimize this number, which is
+						particularly useful in solving many computational
+						problems more efficiently on graphs that are "close" to
+						being trees.
+					</p>
+					<Separator />
+					<p className="text-stone-400 my-2">
+						Graph and result format are referenced from{" "}
+						<Link
+							className="underline text-blue-400"
+							to="https://pacechallenge.wordpress.com/pace-2016/track-a-treewidth/"
+						>
+							PACE 2016
+						</Link>
+					</p>
+					<p className="text-stone-400 mb-2">
+						The algorithm used is modified from{" "}
+						<Link
+							className="underline text-blue-400"
+							to="https://github.com/mrprajesh/pacechallenge"
+						>
+							mrprajesh
+						</Link>
+					</p>
 				</div>
-				<div className="absolute bottom-1 right-10 flex items-center gap-1">
+
+				<div className="w-full absolute bottom-16 px-16 flex items-center justify-end gap-1">
 					{hasResult && (
 						<Button
 							className="bg-stone-700 hover:bg-stone-500
@@ -131,9 +182,9 @@ export default function AlgorithmRunner() {
 					</Button>
 				</div>
 			</div>
-			<div className="border-2 border-stone-300 w-full row-span-1 rounded-lg shadow-sm">
+			{/* <div className="border-2 border-stone-300 w-full row-span-1 rounded-lg shadow-sm">
 				<p className="text-center py-2 text-stone-400">description</p>
-			</div>
+			</div> */}
 		</div>
 	);
 }
