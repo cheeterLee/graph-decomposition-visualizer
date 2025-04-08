@@ -431,7 +431,9 @@ export default function SVGEditor({
 			.attr("height", svgContainerRef.current.clientHeight);
 		svgRef.current = svg;
 
-		const linksGroup = svg
+		const graphGroup = svg.append("g").attr("class", "graph-group");
+
+		const linksGroup = graphGroup
 			.append("g")
 			.attr("class", "link")
 			.attr("stroke", colorPalette.lightTheme.edge)
@@ -439,7 +441,7 @@ export default function SVGEditor({
 
 		linksGroupRef.current = linksGroup.node();
 
-		const nodesGroup = svg
+		const nodesGroup = graphGroup
 			.append("g")
 			.attr("class", "node")
 			.attr("fill", colorPalette.lightTheme.vertexFill)
@@ -447,6 +449,11 @@ export default function SVGEditor({
 		// .attr("stroke-width", 3);
 
 		nodesGroupRef.current = nodesGroup.node();
+
+		const zoom = d3.zoom<SVGSVGElement, undefined>().on("zoom", (event) => {
+			graphGroup.attr("transform", event.transform);
+		});
+		svg.call(zoom);
 
 		const svgNode = svg.node();
 		if (!svgNode) return;
@@ -986,6 +993,8 @@ export default function SVGEditor({
 					</p>
 				</div>
 			)}
+
+			
 		</div>
 	);
 }
