@@ -1021,12 +1021,22 @@ export default function SVGEditor({
 				</div>
 			)}
 
-			<div className="absolute bottom-2 left-2 flex items-center gap-2 bg-white p-2 rounded shadow">
-				<Button onClick={handleZoomOut} variant="ghost" size="icon">
+			<div className="absolute bottom-2 left-2 flex items-center gap-2 border-2 border-stone-200 rounded-lg p-2 shadow-sm">
+				<Button
+					onClick={handleZoomOut}
+					variant="ghost"
+					size="icon"
+					className="text-stone-400"
+				>
 					-
 				</Button>
-				<span className="text-sm text-stone-500">{zoomPercentage}</span>
-				<Button onClick={handleZoomIn} variant="ghost" size="icon">
+				<span className="text-sm text-stone-400">{zoomPercentage}</span>
+				<Button
+					onClick={handleZoomIn}
+					variant="ghost"
+					size="icon"
+					className="text-stone-400"
+				>
 					+
 				</Button>
 			</div>
