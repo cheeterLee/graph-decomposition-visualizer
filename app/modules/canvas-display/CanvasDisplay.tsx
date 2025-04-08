@@ -60,6 +60,8 @@ export default function CanvasDisplay() {
 
 	const [simulationDone, setSimulationDone] = React.useState(false);
 
+	const [isPanEnabled, setIsPanEnabled] = React.useState<boolean>(false);
+
 	const [selectionStart, setSelectionStart] = React.useState<{
 		x: number;
 		y: number;
@@ -85,6 +87,12 @@ export default function CanvasDisplay() {
 	const navigate = useNavigate();
 
 	const canvasRef = React.useRef<HTMLCanvasElement>(null);
+
+	const zoomRef = React.useRef<d3.ZoomBehavior<
+		HTMLCanvasElement,
+		unknown
+	> | null>(null);
+	const transformRef = React.useRef<d3.ZoomTransform | null>(null);
 
 	const nodesRef = React.useRef<NodeDatum[]>([]);
 	const linksRef = React.useRef<LinkDatum[]>([]);
@@ -166,6 +174,8 @@ export default function CanvasDisplay() {
 	};
 
 	const handleMouseDown = (e: MouseEvent) => {
+		if (isPanEnabled) return;
+
 		dispatch(globalSlice.actions.clearHighlight());
 		// undo one step of preview highlighting if needed
 		dispatch(globalSlice.actions.undoPreviewHighlighting());
@@ -180,6 +190,8 @@ export default function CanvasDisplay() {
 	const handleMouseMove = (e: MouseEvent) => {
 		if (!selectionStart || !canvasRef.current) return;
 
+		if (isPanEnabled) return;
+
 		isDraggingRef.current = true;
 		const { x, y } = toCanvasCoords(e);
 		const rect = {
@@ -192,6 +204,8 @@ export default function CanvasDisplay() {
 	};
 
 	const handleMouseUp = () => {
+		if (isPanEnabled) return;
+
 		if (!selectionRect) {
 			setSelectionStart(null);
 			return;
@@ -249,9 +263,28 @@ export default function CanvasDisplay() {
 		window.URL.revokeObjectURL(url);
 	};
 
-	const handleZoomIn = (e: React.SyntheticEvent) => {};
+	const handleZoomIn = (e: React.SyntheticEvent) => {
+		e.stopPropagation();
+		if (canvasRef.current && zoomRef.current) {
+			d3.select(canvasRef.current)
+				.transition()
+				.call(zoomRef.current.scaleBy, 1.2);
+		}
+	};
 
-	const handleZoomOut = (e: React.SyntheticEvent) => {};
+	const handleZoomOut = (e: React.SyntheticEvent) => {
+		e.stopPropagation();
+		if (canvasRef.current && zoomRef.current) {
+			d3.select(canvasRef.current)
+				.transition()
+				.call(zoomRef.current.scaleBy, 1 / 1.2);
+		}
+	};
+
+	const togglePanMode = (e: React.SyntheticEvent) => {
+		e.stopPropagation();
+		setIsPanEnabled((prev) => !prev);
+	};
 
 	const handleViewRaw = () => {
 		dispatch(displaySlice.actions.setIsViewRawMode(true));
@@ -303,6 +336,19 @@ export default function CanvasDisplay() {
 
 		// Clear the canvas.
 		context.clearRect(0, 0, canvasWidth, canvasHeight);
+
+		// Apply zoom and pan transform
+		if (transformRef.current) {
+			context.save();
+			context.setTransform(
+				transformRef.current.k,
+				0,
+				0,
+				transformRef.current.k,
+				transformRef.current.x,
+				transformRef.current.y
+			);
+		}
 
 		// Draw all links.
 		// context.strokeStyle = "#aaa";
@@ -416,6 +462,11 @@ export default function CanvasDisplay() {
 			context.fillText(text, x - textMetrics.width / 2, y + 4);
 		});
 
+		// Restore context if transform was applied
+		if (transformRef.current) {
+			context.restore();
+		}
+
 		if (selectionRect) {
 			context.save();
 			context.strokeStyle = colorPalette.lightTheme.bagBorder;
@@ -429,6 +480,47 @@ export default function CanvasDisplay() {
 			context.restore();
 		}
 	};
+
+	React.useEffect(() => {
+		if (!canvasRef.current) return;
+
+		const canvas = canvasRef.current;
+
+		const zoom = d3
+			.zoom<HTMLCanvasElement, unknown>()
+			.scaleExtent([0.1, 10])
+			.on("zoom", (event) => {
+				if (isPanEnabled) {
+					transformRef.current = event.transform;
+				} else {
+					// Allow zoom but prevent panning
+					transformRef.current = d3.zoomIdentity
+						.translate(
+							transformRef.current?.x || 0,
+							transformRef.current?.y || 0
+						)
+						.scale(event.transform.k);
+				}
+				drawCanvas();
+				setZoomPercentage(Math.round(event.transform.k * 100));
+			});
+
+		zoomRef.current = zoom;
+
+		// apply zoom behavior to the canvas
+		d3.select(canvas).call(zoom);
+
+		// disable panning when `isPanEnabled` is false
+		if (!isPanEnabled) {
+			d3.select(canvas)
+				.on("mousedown.zoom", null)
+				.on("mousemove.zoom", null);
+		}
+
+		return () => {
+			d3.select(canvas).on(".zoom", null);
+		};
+	}, [isPanEnabled]);
 
 	React.useEffect(() => {
 		drawCanvas();
@@ -649,6 +741,16 @@ export default function CanvasDisplay() {
 							className="text-stone-400"
 						>
 							+
+						</Button>
+						<Button
+							onClick={togglePanMode} // Toggle pan behavior
+							variant="ghost"
+							size="sm"
+							className={`text-stone-400 ${
+								isPanEnabled ? "bg-stone-200" : ""
+							}`}
+						>
+							{isPanEnabled ? "Disable Pan" : "Enable Pan"}
 						</Button>
 					</div>
 				</div>
