@@ -94,7 +94,7 @@ export default function SVGEditor({
 	const [isFileUploadFinished, setIsFileUploadFinished] =
 		React.useState<boolean>(false);
 
-	const [zoomPercentage, setZoomPercentage] = React.useState<number>(100)
+	const [zoomPercentage, setZoomPercentage] = React.useState<number>(100);
 
 	const navigate = useNavigate();
 
@@ -227,12 +227,14 @@ export default function SVGEditor({
 	};
 
 	const handleZoomIn = (e: React.SyntheticEvent) => {
+		e.stopPropagation();
 		if (svgRef.current && zoomRef.current) {
 			svgRef.current.transition().call(zoomRef.current.scaleBy, 1.2);
 		}
 	};
 
 	const handleZoomOut = (e: React.SyntheticEvent) => {
+		e.stopPropagation();
 		if (svgRef.current && zoomRef.current) {
 			svgRef.current.transition().call(zoomRef.current.scaleBy, 1 / 1.2);
 		}
@@ -1023,14 +1025,7 @@ export default function SVGEditor({
 				<Button onClick={handleZoomOut} variant="ghost" size="icon">
 					-
 				</Button>
-				<span className="text-sm text-stone-500">
-					{/* {svgRef.current
-						? `${Math.round(
-								(svgRef.current.property("__zoom")?.k || 1) * 100
-						  )}%`
-						: "100%"} */}
-					{zoomPercentage}
-				</span>
+				<span className="text-sm text-stone-500">{zoomPercentage}</span>
 				<Button onClick={handleZoomIn} variant="ghost" size="icon">
 					+
 				</Button>
