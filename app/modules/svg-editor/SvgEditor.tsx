@@ -1021,7 +1021,7 @@ export default function SVGEditor({
 				</div>
 			)}
 
-			<div className="absolute bottom-2 left-2 flex items-center gap-2 border-2 border-stone-200 rounded-lg p-2 shadow-sm">
+			<div className="absolute bottom-2 left-2 flex items-center gap-2 border-2 border-stone-200 rounded-lg p-1 shadow-sm">
 				<Button
 					onClick={handleZoomOut}
 					variant="ghost"

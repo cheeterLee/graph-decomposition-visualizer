@@ -70,6 +70,9 @@ export default function CanvasDisplay() {
 		width: number;
 		height: number;
 	} | null>(null);
+
+	const [zoomPercentage, setZoomPercentage] = React.useState<number>(100);
+
 	// const [selectedNodeIds, setSelectedNodeIds] = React.useState<Set<number>>(
 	// 	new Set()
 	// );
@@ -245,6 +248,10 @@ export default function CanvasDisplay() {
 		document.body.removeChild(link);
 		window.URL.revokeObjectURL(url);
 	};
+
+	const handleZoomIn = (e: React.SyntheticEvent) => {};
+
+	const handleZoomOut = (e: React.SyntheticEvent) => {};
 
 	const handleViewRaw = () => {
 		dispatch(displaySlice.actions.setIsViewRawMode(true));
@@ -609,8 +616,10 @@ export default function CanvasDisplay() {
 				<div className="w-full h-full">
 					<canvas ref={canvasRef} className="w-full h-full" />
 					{showAddToGroupButton && (
-						<div className="absolute border-2 border-stone-300 bottom-1 left-1/2 -translate-x-1/2
-						 h-[40px] rounded-lg flex items-center justify-between gap-2 px-4 z-20 bg-white">
+						<div
+							className="absolute border-2 border-stone-300 bottom-1 left-1/2 -translate-x-1/2
+						 h-[40px] rounded-lg flex items-center justify-between gap-2 px-4 z-20 bg-white"
+						>
 							<Button
 								size="sm"
 								variant="ghost"
@@ -621,6 +630,27 @@ export default function CanvasDisplay() {
 							</Button>
 						</div>
 					)}
+					<div className="absolute bottom-2 left-2 flex items-center gap-2 border-2 border-stone-200 rounded-lg p-1 shadow-sm">
+						<Button
+							onClick={handleZoomOut}
+							variant="ghost"
+							size="icon"
+							className="text-stone-400"
+						>
+							-
+						</Button>
+						<span className="text-sm text-stone-400">
+							{zoomPercentage}
+						</span>
+						<Button
+							onClick={handleZoomIn}
+							variant="ghost"
+							size="icon"
+							className="text-stone-400"
+						>
+							+
+						</Button>
+					</div>
 				</div>
 			)}
 			<div className="pointer-events-none absolute border-2 rounded-lg border-stone-300 bottom-1 right-1 text-stone-400 text-xs p-2 z-10">
