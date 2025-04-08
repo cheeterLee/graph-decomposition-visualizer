@@ -80,6 +80,11 @@ export default function SVGEditor({
 		undefined
 	> | null>(null);
 
+	const zoomRef = React.useRef<d3.ZoomBehavior<
+		SVGSVGElement,
+		undefined
+	> | null>(null);
+
 	const linksGroupRef = React.useRef<SVGGElement | null>(null);
 	const nodesGroupRef = React.useRef<SVGGElement | null>(null);
 
@@ -88,6 +93,8 @@ export default function SVGEditor({
 	const [rawData, setRawData] = React.useState<string>(defaultRawData);
 	const [isFileUploadFinished, setIsFileUploadFinished] =
 		React.useState<boolean>(false);
+
+	const [zoomPercentage, setZoomPercentage] = React.useState<number>(100)
 
 	const navigate = useNavigate();
 
@@ -217,6 +224,18 @@ export default function SVGEditor({
 
 		reader.readAsText(file);
 		dispatch(globalSlice.actions.clearGroupsHighlighting());
+	};
+
+	const handleZoomIn = (e: React.SyntheticEvent) => {
+		if (svgRef.current && zoomRef.current) {
+			svgRef.current.transition().call(zoomRef.current.scaleBy, 1.2);
+		}
+	};
+
+	const handleZoomOut = (e: React.SyntheticEvent) => {
+		if (svgRef.current && zoomRef.current) {
+			svgRef.current.transition().call(zoomRef.current.scaleBy, 1 / 1.2);
+		}
 	};
 
 	const parseGraph = (
@@ -452,7 +471,13 @@ export default function SVGEditor({
 
 		const zoom = d3.zoom<SVGSVGElement, undefined>().on("zoom", (event) => {
 			graphGroup.attr("transform", event.transform);
+
+			// update zoom percentage
+			setZoomPercentage(Math.round(event.transform.k * 100));
 		});
+
+		zoomRef.current = zoom;
+
 		svg.call(zoom);
 
 		const svgNode = svg.node();
@@ -994,7 +1019,22 @@ export default function SVGEditor({
 				</div>
 			)}
 
-			
+			<div className="absolute bottom-2 left-2 flex items-center gap-2 bg-white p-2 rounded shadow">
+				<Button onClick={handleZoomOut} variant="ghost" size="icon">
+					-
+				</Button>
+				<span className="text-sm text-stone-500">
+					{/* {svgRef.current
+						? `${Math.round(
+								(svgRef.current.property("__zoom")?.k || 1) * 100
+						  )}%`
+						: "100%"} */}
+					{zoomPercentage}
+				</span>
+				<Button onClick={handleZoomIn} variant="ghost" size="icon">
+					+
+				</Button>
+			</div>
 		</div>
 	);
 }
