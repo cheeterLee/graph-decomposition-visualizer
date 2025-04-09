@@ -480,7 +480,10 @@ export default function SVGEditor({
 
 		zoomRef.current = zoom;
 
+		// Disable double-click zooming
 		svg.call(zoom);
+
+		svg.on("dblclick.zoom", null);
 
 		const svgNode = svg.node();
 		if (!svgNode) return;
