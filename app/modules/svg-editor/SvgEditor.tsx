@@ -102,8 +102,10 @@ export default function SVGEditor({
 	const [isFileUploadFinished, setIsFileUploadFinished] =
 		React.useState<boolean>(false);
 
+	const [sampleGraphSelectValueKey, setSampleGraphSelectValueKey] =
+		React.useState(+new Date());
 	const [sampleGraphSelectValue, setSampleGraphSelectValue] =
-		React.useState<string>("");
+		React.useState<string | undefined>(undefined);
 
 	// TODO: racing condition
 	const handleSelectSampleGraph = async (val: string) => {
@@ -322,8 +324,7 @@ export default function SVGEditor({
 		return { nodes, edges };
 	};
 
-	const handleFileSubmit = () => {
-		// console.log("run!");
+	const renderGraph = () => {
 		const uploadedGraph = parseGraph(rawData);
 
 		if (!svgContainerRef.current) return;
@@ -414,11 +415,18 @@ export default function SVGEditor({
 				generatedSimulationState.maxNodeId + 1
 			)
 		);
-		setIsUploadDialogOpen(false);
+		// setIsUploadDialogOpen(false);
 		dispatch(globalSlice.actions.setHasResult(false));
-		dispatch(globalSlice.actions.setIsInEditMode(true))
+		dispatch(globalSlice.actions.setIsInEditMode(true));
 		navigate("/app");
-		// console.log("finish!");
+	};
+
+	const handleFileSubmit = () => {
+		setIsUploadDialogOpen(false);
+		// reset sample graph selection box
+        setSampleGraphSelectValueKey(+new Date())
+		setSampleGraphSelectValue(undefined)
+		renderGraph();
 	};
 
 	const generateSimulationGraphState = (
@@ -466,7 +474,8 @@ export default function SVGEditor({
 	// effect to redraw svg when a client side graph selection is performed
 	React.useEffect(() => {
 		if (rawData && sampleGraphSelectValue) {
-			handleFileSubmit();
+			// handleFileSubmit();
+			renderGraph();
 		}
 	}, [rawData, sampleGraphSelectValue]);
 
@@ -518,7 +527,8 @@ export default function SVGEditor({
 		svgContainerRef.current.appendChild(svgNode);
 
 		if (rawData !== "") {
-			handleFileSubmit();
+			// handleFileSubmit();
+			renderGraph();
 		}
 
 		return () => {
@@ -997,6 +1007,7 @@ export default function SVGEditor({
 					className="h-[60%] bg-stone-300"
 				/>
 				<Select
+					key={sampleGraphSelectValueKey}
 					value={sampleGraphSelectValue}
 					onValueChange={handleSelectSampleGraph}
 				>
