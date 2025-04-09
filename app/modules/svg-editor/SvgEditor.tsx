@@ -44,7 +44,7 @@ export default function SVGEditor({
 	// const graph = useMap<number, Vertex>(Array.from(g.entries()));
 
 	const {
-		cursorMode,
+		// cursorMode,
 		vertices,
 		edges,
 		nextVertexId,
@@ -852,7 +852,7 @@ export default function SVGEditor({
 			className="relative border-2 border-stone-300 flex-1 h-[700px] rounded-lg shadow-sm"
 		>
 			<div className="absolute border-2 border-stone-300 top-1 left-1/2 -translate-x-1/2 h-[50px] rounded-lg flex items-center gap-2 px-4">
-				{cursorMode === "pointer" ? (
+				{/* {cursorMode === "pointer" ? (
 					<Button
 						variant="ghost"
 						size="icon"
@@ -900,11 +900,11 @@ export default function SVGEditor({
 					>
 						<Grab className="text-stone-400" />
 					</Button>
-				)}
-				<Separator
+				)} */}
+				{/* <Separator
 					orientation="vertical"
 					className="h-[60%] bg-stone-300"
-				/>
+				/> */}
 				<Button onClick={handleAddVertex} variant="ghost" size="icon">
 					<Plus className="text-stone-400" />
 				</Button>

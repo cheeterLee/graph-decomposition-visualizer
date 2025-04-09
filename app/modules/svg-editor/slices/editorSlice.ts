@@ -4,7 +4,7 @@ import { CursorMode, Edge, Vertex, HighlightedElement } from "../types/type";
 
 export interface EditorState {
 	nextVertexId: number;
-	cursorMode: CursorMode;
+	// cursorMode: CursorMode;
 	isAddEdgeMode: boolean;
 	vertices: Vertex[];
 	edges: Edge[];
@@ -13,7 +13,7 @@ export interface EditorState {
 
 const initialState: EditorState = {
 	nextVertexId: 1,
-	cursorMode: "pointer",
+	// cursorMode: "pointer",
 	isAddEdgeMode: false,
 	highlightedElement: null,
 	vertices: [],
@@ -39,9 +39,9 @@ const editorSlice = createSlice({
 		},
 
 		/* widget reducers */
-		switchCursorMode: (state, action: PayloadAction<CursorMode>) => {
-			state.cursorMode = action.payload;
-		},
+		// switchCursorMode: (state, action: PayloadAction<CursorMode>) => {
+		// 	state.cursorMode = action.payload;
+		// },
 
 		/* vertex reducers */
 		setNextVertexId: (state, action: PayloadAction<number>) => {
