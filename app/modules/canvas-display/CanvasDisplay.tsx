@@ -60,7 +60,7 @@ export default function CanvasDisplay() {
 
 	const [simulationDone, setSimulationDone] = React.useState(false);
 
-	const [isPanEnabled, setIsPanEnabled] = React.useState<boolean>(false);
+	// const [isPanEnabled, setIsPanEnabled] = React.useState<boolean>(false);
 
 	const [selectionStart, setSelectionStart] = React.useState<{
 		x: number;
@@ -154,13 +154,36 @@ export default function CanvasDisplay() {
 		}
 	};
 
+	// const toCanvasCoords = (event: MouseEvent) => {
+	// 	const canvas = canvasRef.current!;
+	// 	const rect = canvas.getBoundingClientRect();
+	// 	return {
+	// 		x: (event.clientX - rect.left) * (canvas.width / rect.width),
+	// 		y: (event.clientY - rect.top) * (canvas.height / rect.height),
+	// 	};
+	// };
+
 	const toCanvasCoords = (event: MouseEvent) => {
 		const canvas = canvasRef.current!;
 		const rect = canvas.getBoundingClientRect();
-		return {
-			x: (event.clientX - rect.left) * (canvas.width / rect.width),
-			y: (event.clientY - rect.top) * (canvas.height / rect.height),
-		};
+
+		// Convert screen coordinates to canvas coordinates
+		const x = (event.clientX - rect.left) * (canvas.width / rect.width);
+		const y = (event.clientY - rect.top) * (canvas.height / rect.height);
+
+		// Adjust for the current zoom and pan transform
+		// const transformedX =
+		// 	(x - (transformRef.current?.x || 0)) /
+		// 	(transformRef.current?.k || 1);
+		// const transformedY =
+		// 	(y - (transformRef.current?.y || 0)) /
+		// 	(transformRef.current?.k || 1);
+
+		const transform = transformRef.current || d3.zoomIdentity;
+		const transformedX = (x - transform.x) / transform.k;
+		const transformedY = (y - transform.y) / transform.k;
+
+		return { x: transformedX, y: transformedY };
 	};
 
 	// abort selection if pointer drags out of bounds
@@ -174,7 +197,7 @@ export default function CanvasDisplay() {
 	};
 
 	const handleMouseDown = (e: MouseEvent) => {
-		if (isPanEnabled) return;
+		// if (isPanEnabled) return;
 
 		dispatch(globalSlice.actions.clearHighlight());
 		// undo one step of preview highlighting if needed
@@ -184,13 +207,29 @@ export default function CanvasDisplay() {
 		isDraggingRef.current = false;
 		const { x, y } = toCanvasCoords(e);
 		setSelectionStart({ x, y });
+
+		// Adjust coordinates based on the current transform
+		// const transformedX =
+		// 	(x - (transformRef.current?.x || 0)) /
+		// 	(transformRef.current?.k || 1);
+		// const transformedY =
+		// 	(y - (transformRef.current?.y || 0)) /
+		// 	(transformRef.current?.k || 1);
+
+		// setSelectionStart({ x: transformedX, y: transformedY });
+		// setSelectionRect({
+		// 	x: transformedX,
+		// 	y: transformedY,
+		// 	width: 0,
+		// 	height: 0,
+		// });
 		setSelectionRect({ x, y, width: 0, height: 0 });
 	};
 
 	const handleMouseMove = (e: MouseEvent) => {
 		if (!selectionStart || !canvasRef.current) return;
 
-		if (isPanEnabled) return;
+		// if (isPanEnabled) return;
 
 		isDraggingRef.current = true;
 		const { x, y } = toCanvasCoords(e);
@@ -201,10 +240,25 @@ export default function CanvasDisplay() {
 			height: Math.abs(y - selectionStart.y),
 		};
 		setSelectionRect(rect);
+
+		// const transformedX =
+		// 	(x - (transformRef.current?.x || 0)) /
+		// 	(transformRef.current?.k || 1);
+		// const transformedY =
+		// 	(y - (transformRef.current?.y || 0)) /
+		// 	(transformRef.current?.k || 1);
+
+		// const rect = {
+		// 	x: Math.min(selectionStart.x, transformedX),
+		// 	y: Math.min(selectionStart.y, transformedY),
+		// 	width: Math.abs(transformedX - selectionStart.x),
+		// 	height: Math.abs(transformedY - selectionStart.y),
+		// };
+		setSelectionRect(rect);
 	};
 
 	const handleMouseUp = () => {
-		if (isPanEnabled) return;
+		// if (isPanEnabled) return;
 
 		if (!selectionRect) {
 			setSelectionStart(null);
@@ -212,15 +266,44 @@ export default function CanvasDisplay() {
 		}
 
 		const newlySelected = new Set<number>();
+		const transform = transformRef.current || d3.zoomIdentity;
+
 		for (const node of bagsRef.current) {
 			if (node.x == null || node.y == null) continue;
+			// const insideX =
+			// 	node.x >= selectionRect.x &&
+			// 	node.x <= selectionRect.x + selectionRect.width;
+			// const insideY =
+			// 	node.y >= selectionRect.y &&
+			// 	node.y <= selectionRect.y + selectionRect.height;
+			// if (insideX && insideY) newlySelected.add(node.id);
+
+			// Transform the node coordinates to match the current zoom and pan state
+			const transformedNodeX = node.x * transform.k + transform.x;
+			const transformedNodeY = node.y * transform.k + transform.y;
+
+			// Check if the transformed node coordinates are inside the selection rectangle
 			const insideX =
-				node.x >= selectionRect.x &&
-				node.x <= selectionRect.x + selectionRect.width;
+				transformedNodeX >= selectionRect.x &&
+				transformedNodeX <= selectionRect.x + selectionRect.width;
 			const insideY =
-				node.y >= selectionRect.y &&
-				node.y <= selectionRect.y + selectionRect.height;
+				transformedNodeY >= selectionRect.y &&
+				transformedNodeY <= selectionRect.y + selectionRect.height;
+
 			if (insideX && insideY) newlySelected.add(node.id);
+
+			// Adjust node coordinates based on the current transform
+			// const transformedNodeX = (node.x * (transformRef.current?.k || 1)) + (transformRef.current?.x || 0);
+			// const transformedNodeY = (node.y * (transformRef.current?.k || 1)) + (transformRef.current?.y || 0);
+
+			// const insideX =
+			// 	transformedNodeX >= selectionRect.x &&
+			// 	transformedNodeX <= selectionRect.x + selectionRect.width;
+			// const insideY =
+			// 	transformedNodeY >= selectionRect.y &&
+			// 	transformedNodeY <= selectionRect.y + selectionRect.height;
+
+			// if (insideX && insideY) newlySelected.add(node.id);
 		}
 		if (newlySelected.size > 0) {
 			dispatch(globalSlice.actions.selectBags([...newlySelected]));
@@ -279,11 +362,6 @@ export default function CanvasDisplay() {
 				.transition()
 				.call(zoomRef.current.scaleBy, 1 / 1.2);
 		}
-	};
-
-	const togglePanMode = (e: React.SyntheticEvent) => {
-		e.stopPropagation();
-		setIsPanEnabled((prev) => !prev);
 	};
 
 	const handleViewRaw = () => {
@@ -490,17 +568,19 @@ export default function CanvasDisplay() {
 			.zoom<HTMLCanvasElement, unknown>()
 			.scaleExtent([0.1, 10])
 			.on("zoom", (event) => {
-				if (isPanEnabled) {
-					transformRef.current = event.transform;
-				} else {
-					// Allow zoom but prevent panning
-					transformRef.current = d3.zoomIdentity
-						.translate(
-							transformRef.current?.x || 0,
-							transformRef.current?.y || 0
-						)
-						.scale(event.transform.k);
-				}
+				const canvasWidth = canvas.getBoundingClientRect().width;
+				const canvasHeight = canvas.getBoundingClientRect().height;
+
+				const centerX = canvasWidth / 2;
+				const centerY = canvasHeight / 2;
+
+				// transformRef.current = d3.zoomIdentity.scale(event.transform.k);
+				const transform = event.transform;
+				transformRef.current = d3.zoomIdentity
+					.translate(centerX, centerY)
+					.scale(transform.k)
+					.translate(-centerX, -centerY);
+
 				drawCanvas();
 				setZoomPercentage(Math.round(event.transform.k * 100));
 			});
@@ -510,17 +590,16 @@ export default function CanvasDisplay() {
 		// apply zoom behavior to the canvas
 		d3.select(canvas).call(zoom);
 
-		// disable panning when `isPanEnabled` is false
-		if (!isPanEnabled) {
-			d3.select(canvas)
-				.on("mousedown.zoom", null)
-				.on("mousemove.zoom", null);
-		}
+		// Disable panning by removing drag-related events
+		d3.select(canvas)
+			.on("mousedown.zoom", null)
+			.on("mousemove.zoom", null)
+			.on("dblclick.zoom", null);
 
 		return () => {
 			d3.select(canvas).on(".zoom", null);
 		};
-	}, [isPanEnabled]);
+	}, []);
 
 	React.useEffect(() => {
 		drawCanvas();
@@ -741,16 +820,6 @@ export default function CanvasDisplay() {
 							className="text-stone-400"
 						>
 							+
-						</Button>
-						<Button
-							onClick={togglePanMode} // Toggle pan behavior
-							variant="ghost"
-							size="sm"
-							className={`text-stone-400 ${
-								isPanEnabled ? "bg-stone-200" : ""
-							}`}
-						>
-							{isPanEnabled ? "Disable Pan" : "Enable Pan"}
 						</Button>
 					</div>
 				</div>
