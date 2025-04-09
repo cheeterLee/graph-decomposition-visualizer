@@ -956,15 +956,9 @@ export default function SVGEditor({
 				</Dialog>
 			</div>
 
-			{isNodeSelected && (
-				<div className="absolute border-2 border-stone-300 bottom-1 left-1/2 -translate-x-1/2 h-[50px] rounded-lg flex items-center justify-between gap-2 px-4">
-					<Button variant="ghost" className="text-stone-400">
-						<Palette className="text-stone-400" /> Color
-					</Button>
-					<Separator
-						orientation="vertical"
-						className="h-[60%] bg-stone-300"
-					/>
+			{isInEditMode && isNodeSelected && (
+				<div className="absolute border-2 border-stone-300 bottom-1 left-1/2 -translate-x-1/2 h-[50px] 
+				rounded-lg flex items-center justify-between gap-2 px-4 z-20 bg-white">
 					<Button
 						onClick={handleAddEdge}
 						variant="ghost"
@@ -986,15 +980,9 @@ export default function SVGEditor({
 				</div>
 			)}
 
-			{isEdgeSelected && (
-				<div className="absolute border-2 border-stone-300 bottom-1 left-1/2 -translate-x-1/2 h-[50px] rounded-lg flex items-center justify-between gap-2 px-4">
-					<Button variant="ghost" className="text-stone-400">
-						<Palette className="text-stone-400" /> Color
-					</Button>
-					<Separator
-						orientation="vertical"
-						className="h-[60%] bg-stone-300"
-					/>
+			{isInEditMode && isEdgeSelected && (
+				<div className="absolute border-2 border-stone-300 bottom-1 left-1/2 -translate-x-1/2 
+				h-[50px] rounded-lg flex items-center justify-between gap-2 px-4 z-20 bg-white">
 					<Button
 						onClick={handleDeleteEdge}
 						variant="ghost"
@@ -1006,14 +994,14 @@ export default function SVGEditor({
 			)}
 
 			{isInEditMode ? (
-				<div className="pointer-events-none absolute border-2 rounded-lg border-stone-300 bottom-1 right-1 text-stone-400 text-xs p-2">
+				<div className="pointer-events-none absolute border-2 rounded-lg border-stone-300 bottom-1 right-1 text-stone-400 text-xs p-2 z-10">
 					<p className="font-semibold">Actions supported</p>
 					<p>1. Build or edit the graph.</p>
 					<p>2. Upload a .gr file that generates a graph.</p>
 					<p>3. Drag and drop nodes for a clearer layout.</p>
 				</div>
 			) : (
-				<div className="pointer-events-none absolute border-2 rounded-lg border-stone-300 bottom-1 right-1 text-stone-400 text-xs p-2">
+				<div className="pointer-events-none absolute border-2 rounded-lg border-stone-300 bottom-1 right-1 text-stone-400 text-xs p-2 z-10">
 					<p className="font-semibold">Actions supported</p>
 					<p>
 						1. Highlight one node to view bags containing that node.

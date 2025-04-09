@@ -57,6 +57,7 @@ const editorSlice = createSlice({
 			state.vertices = state.vertices.filter(
 				(v) => v.id !== action.payload
 			);
+			state.highlightedElement = null;
 		},
 
 		/* edge reducers */
