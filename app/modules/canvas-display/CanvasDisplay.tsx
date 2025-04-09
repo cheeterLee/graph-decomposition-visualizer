@@ -156,23 +156,23 @@ export default function CanvasDisplay() {
 		const canvas = canvasRef.current!;
 		const rect = canvas.getBoundingClientRect();
 
-		console.log("canvas left", rect.left, "canvas right", rect.right);
-		console.log("event x", event.clientX, "event y", event.clientY);
+		// console.log("canvas left", rect.left, "canvas right", rect.right);
+		// console.log("event x", event.clientX, "event y", event.clientY);
 
 		// Convert screen coordinates to canvas coordinates
 		const x = (event.clientX - rect.left) * (canvas.width / rect.width);
 		const y = (event.clientY - rect.top) * (canvas.height / rect.height);
 		const transform = transformRef.current || d3.zoomIdentity;
-		console.log("transform", transform);
+		// console.log("transform", transform);
 
 		const transformedX = (x - transform.x) / transform.k;
 		const transformedY = (y - transform.y) / transform.k;
-		console.log(
-			"transformed x",
-			transformedX,
-			"transformed y",
-			transformedY
-		);
+		// console.log(
+		// 	"transformed x",
+		// 	transformedX,
+		// 	"transformed y",
+		// 	transformedY
+		// );
 
 		return { x: transformedX, y: transformedY };
 	};
