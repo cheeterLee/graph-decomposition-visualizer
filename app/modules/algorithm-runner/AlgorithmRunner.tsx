@@ -184,9 +184,9 @@ export default function AlgorithmRunner() {
 					</Button>
 				</div>
 			</div>
-			{/* <div className="border-2 border-stone-300 w-full row-span-1 rounded-lg shadow-sm">
-				<p className="text-center py-2 text-stone-400">description</p>
-			</div> */}
+			<div className="border-2 border-stone-300 w-full row-span-1 rounded-lg shadow-sm">
+				<p className="text-center py-2 text-stone-400 text-xs font-light">© Ziyi Li, University of Leeds, 2025</p>
+			</div>
 		</div>
 	);
 }
