@@ -341,7 +341,6 @@ export default function SVGEditor({
 
 			// Called by D3 to initialize the force.
 			force.initialize = (n: SimNode[]) => {
-				console.log("force initialized");
 				nodes = n;
 				// Update the dimensions in case the container size changed
 				const svgRect =
@@ -614,7 +613,7 @@ export default function SVGEditor({
 							highlightedGroups.length
 						) {
 							// render logic for preview highlighting
-							console.log("render when preview");
+							// console.log("render when preview");
 							baseCircle.attr(
 								"stroke",
 								colorPalette.lightTheme.vertexBorder
@@ -655,7 +654,7 @@ export default function SVGEditor({
 							}
 						} else {
 							// render logic after group selection
-							console.log("render when not preview");
+							// console.log("render when not preview");
 							nodeGroup
 								.selectAll("circle.extra-highlight")
 								.remove();
