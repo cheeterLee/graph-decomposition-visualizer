@@ -4,7 +4,7 @@
 
 import type { MetaFunction } from "@remix-run/cloudflare";
 import { Outlet, useLoaderData } from "@remix-run/react";
-import { populateDefaultGraphData } from "~/data/dataPopulation";
+import { populateGraphData } from "~/data/dataPopulation";
 import globalSlice from "~/globalSlice";
 import { useAppDispatch } from "~/hooks/reduxHooks";
 
@@ -22,7 +22,7 @@ export const meta: MetaFunction = () => {
 };
 
 export async function loader() {
-	return populateDefaultGraphData();
+	return populateGraphData('GrotzschGraph');
 }
 
 export default function App() {

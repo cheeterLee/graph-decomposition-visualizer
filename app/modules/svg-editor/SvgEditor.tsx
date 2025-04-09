@@ -33,6 +33,14 @@ import runnerSlice from "../algorithm-runner/slices/runnerSlice";
 import { useNavigate } from "@remix-run/react";
 import globalSlice from "~/globalSlice";
 import { colorPalette } from "~/lib/config";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "~/components/ui/select";
+import { populateGraphData } from "~/data/dataPopulation";
 
 export default function SVGEditor({
 	defaultRawData,
@@ -93,6 +101,26 @@ export default function SVGEditor({
 	const [rawData, setRawData] = React.useState<string>(defaultRawData);
 	const [isFileUploadFinished, setIsFileUploadFinished] =
 		React.useState<boolean>(false);
+
+	const [sampleGraphSelectValue, setSampleGraphSelectValue] =
+		React.useState<string>("");
+
+	const handleSelectSampleGraph = async (val: string) => {
+		const selectedGraphData = populateGraphData(val);
+
+		// console.log('val', selectedGraphData)
+
+		await new Promise<void>((resolve) => {
+			setRawData(selectedGraphData);
+			setSampleGraphSelectValue(val);
+
+			// Use a timeout to ensure state updates propagate
+			setTimeout(resolve, 0);
+		});
+
+		// Call handleFileSubmit after state updates are resolved
+		handleFileSubmit();
+	};
 
 	const [zoomPercentage, setZoomPercentage] = React.useState<number>(100);
 
@@ -963,6 +991,27 @@ export default function SVGEditor({
 						</DialogFooter>
 					</DialogContent>
 				</Dialog>
+				<Separator
+					orientation="vertical"
+					className="h-[60%] bg-stone-300"
+				/>
+				<Select
+					value={sampleGraphSelectValue}
+					onValueChange={handleSelectSampleGraph}
+				>
+					<SelectTrigger className="w-[150px] border-none text-stone-400">
+						<SelectValue placeholder="Sample Graphs" />
+					</SelectTrigger>
+					<SelectContent className="text-stone-400">
+						<SelectItem value="HeawoodGraph">
+							HeawoodGraph
+						</SelectItem>
+						<SelectItem value="GrotzschGraph">
+							GrotzschGraph
+						</SelectItem>
+						<SelectItem value="PappusGraph">PappusGraph</SelectItem>
+					</SelectContent>
+				</Select>
 			</div>
 
 			{isInEditMode && isNodeSelected && (
