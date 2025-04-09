@@ -60,7 +60,6 @@ export default function CanvasDisplay() {
 
 	const [simulationDone, setSimulationDone] = React.useState(false);
 
-	// const [isPanEnabled, setIsPanEnabled] = React.useState<boolean>(false);
 
 	const [selectionStart, setSelectionStart] = React.useState<{
 		x: number;
@@ -74,13 +73,6 @@ export default function CanvasDisplay() {
 	} | null>(null);
 
 	const [zoomPercentage, setZoomPercentage] = React.useState<number>(100);
-
-	// const [selectedNodeIds, setSelectedNodeIds] = React.useState<Set<number>>(
-	// 	new Set()
-	// );
-
-	// const [showAddToGroupButton, setShowAddToGroupButton] =
-	// 	React.useState<boolean>(false);
 
 	const dispatch = useAppDispatch();
 
@@ -122,11 +114,18 @@ export default function CanvasDisplay() {
 		const x = (event.clientX - rect.left) * (canvas.width / rect.width);
 		const y = (event.clientY - rect.top) * (canvas.height / rect.height);
 
+		// Adjust for the current zoom and pan transform
+		const transform = transformRef.current || d3.zoomIdentity;
+		const transformedX = (x - transform.x) / transform.k;
+		const transformedY = (y - transform.y) / transform.k;
+
 		let clickedBag: [number, number[]] | null = null;
 		for (const node of bagsRef.current) {
 			if (node.x == null || node.y == null) continue;
-			const dx = x - node.x,
-				dy = y - node.y;
+
+			const dx = transformedX - node.x;
+			const dy = transformedY - node.y;
+
 			if (
 				(dx * dx) / (ovalWidth * ovalWidth) +
 					(dy * dy) / (ovalHeight * ovalHeight) <=
@@ -153,15 +152,6 @@ export default function CanvasDisplay() {
 			dispatch(globalSlice.actions.undoPreviewHighlighting());
 		}
 	};
-
-	// const toCanvasCoords = (event: MouseEvent) => {
-	// 	const canvas = canvasRef.current!;
-	// 	const rect = canvas.getBoundingClientRect();
-	// 	return {
-	// 		x: (event.clientX - rect.left) * (canvas.width / rect.width),
-	// 		y: (event.clientY - rect.top) * (canvas.height / rect.height),
-	// 	};
-	// };
 
 	const toCanvasCoords = (event: MouseEvent) => {
 		const canvas = canvasRef.current!;
@@ -199,7 +189,6 @@ export default function CanvasDisplay() {
 	};
 
 	const handleMouseDown = (e: MouseEvent) => {
-
 		dispatch(globalSlice.actions.clearHighlight());
 		// undo one step of preview highlighting if needed
 		dispatch(globalSlice.actions.undoPreviewHighlighting());
@@ -250,13 +239,6 @@ export default function CanvasDisplay() {
 
 		for (const node of bagsRef.current) {
 			if (node.x == null || node.y == null) continue;
-			// const insideX =
-			// 	node.x >= selectionRect.x &&
-			// 	node.x <= selectionRect.x + selectionRect.width;
-			// const insideY =
-			// 	node.y >= selectionRect.y &&
-			// 	node.y <= selectionRect.y + selectionRect.height;
-			// if (insideX && insideY) newlySelected.add(node.id);
 
 			// Transform the node coordinates to match the current zoom and pan state
 			const transformedNodeX = node.x * transform.k + transform.x;
@@ -271,19 +253,6 @@ export default function CanvasDisplay() {
 				transformedNodeY <= selectionRect.y + selectionRect.height;
 
 			if (insideX && insideY) newlySelected.add(node.id);
-
-			// Adjust node coordinates based on the current transform
-			// const transformedNodeX = (node.x * (transformRef.current?.k || 1)) + (transformRef.current?.x || 0);
-			// const transformedNodeY = (node.y * (transformRef.current?.k || 1)) + (transformRef.current?.y || 0);
-
-			// const insideX =
-			// 	transformedNodeX >= selectionRect.x &&
-			// 	transformedNodeX <= selectionRect.x + selectionRect.width;
-			// const insideY =
-			// 	transformedNodeY >= selectionRect.y &&
-			// 	transformedNodeY <= selectionRect.y + selectionRect.height;
-
-			// if (insideX && insideY) newlySelected.add(node.id);
 		}
 		if (newlySelected.size > 0) {
 			dispatch(globalSlice.actions.selectBags([...newlySelected]));
