@@ -113,12 +113,6 @@ export default function SVGEditor({
 		setSampleGraphSelectValue(val);
 	};
 
-	React.useEffect(() => {
-		if (rawData && sampleGraphSelectValue) {
-			handleFileSubmit();
-		}
-	}, [rawData, sampleGraphSelectValue]);
-
 	const [zoomPercentage, setZoomPercentage] = React.useState<number>(100);
 
 	const navigate = useNavigate();
@@ -422,6 +416,7 @@ export default function SVGEditor({
 		);
 		setIsUploadDialogOpen(false);
 		dispatch(globalSlice.actions.setHasResult(false));
+		dispatch(globalSlice.actions.setIsInEditMode(true))
 		navigate("/app");
 		// console.log("finish!");
 	};
@@ -467,6 +462,13 @@ export default function SVGEditor({
 		}
 		return { vertices, edges, maxNodeId };
 	};
+
+	// effect to redraw svg when a client side graph selection is performed
+	React.useEffect(() => {
+		if (rawData && sampleGraphSelectValue) {
+			handleFileSubmit();
+		}
+	}, [rawData, sampleGraphSelectValue]);
 
 	// Effect runs on initial mount to draw SVG
 	React.useEffect(() => {
