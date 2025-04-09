@@ -105,22 +105,19 @@ export default function SVGEditor({
 	const [sampleGraphSelectValue, setSampleGraphSelectValue] =
 		React.useState<string>("");
 
+	// TODO: racing condition
 	const handleSelectSampleGraph = async (val: string) => {
 		const selectedGraphData = populateGraphData(val);
 
-		// console.log('val', selectedGraphData)
-
-		await new Promise<void>((resolve) => {
-			setRawData(selectedGraphData);
-			setSampleGraphSelectValue(val);
-
-			// Use a timeout to ensure state updates propagate
-			setTimeout(resolve, 0);
-		});
-
-		// Call handleFileSubmit after state updates are resolved
-		handleFileSubmit();
+		setRawData(selectedGraphData);
+		setSampleGraphSelectValue(val);
 	};
+
+	React.useEffect(() => {
+		if (rawData && sampleGraphSelectValue) {
+			handleFileSubmit();
+		}
+	}, [rawData, sampleGraphSelectValue]);
 
 	const [zoomPercentage, setZoomPercentage] = React.useState<number>(100);
 
@@ -332,6 +329,7 @@ export default function SVGEditor({
 	};
 
 	const handleFileSubmit = () => {
+		// console.log("run!");
 		const uploadedGraph = parseGraph(rawData);
 
 		if (!svgContainerRef.current) return;
@@ -425,6 +423,7 @@ export default function SVGEditor({
 		setIsUploadDialogOpen(false);
 		dispatch(globalSlice.actions.setHasResult(false));
 		navigate("/app");
+		// console.log("finish!");
 	};
 
 	const generateSimulationGraphState = (
