@@ -167,21 +167,23 @@ export default function CanvasDisplay() {
 		const canvas = canvasRef.current!;
 		const rect = canvas.getBoundingClientRect();
 
+		console.log("canvas left", rect.left, "canvas right", rect.right);
+		console.log("event x", event.clientX, "event y", event.clientY);
+
 		// Convert screen coordinates to canvas coordinates
 		const x = (event.clientX - rect.left) * (canvas.width / rect.width);
 		const y = (event.clientY - rect.top) * (canvas.height / rect.height);
-
-		// Adjust for the current zoom and pan transform
-		// const transformedX =
-		// 	(x - (transformRef.current?.x || 0)) /
-		// 	(transformRef.current?.k || 1);
-		// const transformedY =
-		// 	(y - (transformRef.current?.y || 0)) /
-		// 	(transformRef.current?.k || 1);
-
 		const transform = transformRef.current || d3.zoomIdentity;
+		console.log("transform", transform);
+
 		const transformedX = (x - transform.x) / transform.k;
 		const transformedY = (y - transform.y) / transform.k;
+		console.log(
+			"transformed x",
+			transformedX,
+			"transformed y",
+			transformedY
+		);
 
 		return { x: transformedX, y: transformedY };
 	};
@@ -197,7 +199,6 @@ export default function CanvasDisplay() {
 	};
 
 	const handleMouseDown = (e: MouseEvent) => {
-		// if (isPanEnabled) return;
 
 		dispatch(globalSlice.actions.clearHighlight());
 		// undo one step of preview highlighting if needed
@@ -205,61 +206,40 @@ export default function CanvasDisplay() {
 		// TODO: temp fix
 		dispatch(editorSlice.actions.setHighlightedElement(null));
 		isDraggingRef.current = false;
+
 		const { x, y } = toCanvasCoords(e);
 		setSelectionStart({ x, y });
 
-		// Adjust coordinates based on the current transform
-		// const transformedX =
-		// 	(x - (transformRef.current?.x || 0)) /
-		// 	(transformRef.current?.k || 1);
-		// const transformedY =
-		// 	(y - (transformRef.current?.y || 0)) /
-		// 	(transformRef.current?.k || 1);
-
-		// setSelectionStart({ x: transformedX, y: transformedY });
-		// setSelectionRect({
-		// 	x: transformedX,
-		// 	y: transformedY,
-		// 	width: 0,
-		// 	height: 0,
-		// });
 		setSelectionRect({ x, y, width: 0, height: 0 });
 	};
 
 	const handleMouseMove = (e: MouseEvent) => {
 		if (!selectionStart || !canvasRef.current) return;
 
-		// if (isPanEnabled) return;
-
 		isDraggingRef.current = true;
+
+		// Convert mouse event coordinates to canvas coordinates
 		const { x, y } = toCanvasCoords(e);
+
+		// Adjust the selection rectangle coordinates based on the zoom and pan transform
+		const transform = transformRef.current || d3.zoomIdentity;
+		const transformedStartX = selectionStart.x * transform.k + transform.x;
+		const transformedStartY = selectionStart.y * transform.k + transform.y;
+		const transformedX = x * transform.k + transform.x;
+		const transformedY = y * transform.k + transform.y;
+
+		// Calculate the selection rectangle in the transformed space
 		const rect = {
-			x: Math.min(selectionStart.x, x),
-			y: Math.min(selectionStart.y, y),
-			width: Math.abs(x - selectionStart.x),
-			height: Math.abs(y - selectionStart.y),
+			x: Math.min(transformedStartX, transformedX),
+			y: Math.min(transformedStartY, transformedY),
+			width: Math.abs(transformedX - transformedStartX),
+			height: Math.abs(transformedY - transformedStartY),
 		};
-		setSelectionRect(rect);
 
-		// const transformedX =
-		// 	(x - (transformRef.current?.x || 0)) /
-		// 	(transformRef.current?.k || 1);
-		// const transformedY =
-		// 	(y - (transformRef.current?.y || 0)) /
-		// 	(transformRef.current?.k || 1);
-
-		// const rect = {
-		// 	x: Math.min(selectionStart.x, transformedX),
-		// 	y: Math.min(selectionStart.y, transformedY),
-		// 	width: Math.abs(transformedX - selectionStart.x),
-		// 	height: Math.abs(transformedY - selectionStart.y),
-		// };
 		setSelectionRect(rect);
 	};
 
 	const handleMouseUp = () => {
-		// if (isPanEnabled) return;
-
 		if (!selectionRect) {
 			setSelectionStart(null);
 			return;
