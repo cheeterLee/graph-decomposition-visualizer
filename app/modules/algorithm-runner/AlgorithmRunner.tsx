@@ -136,6 +136,7 @@ export default function AlgorithmRunner() {
 						<Link
 							className="underline text-blue-400"
 							to="https://pacechallenge.wordpress.com/pace-2016/track-a-treewidth/"
+							target="_blank"
 						>
 							PACE 2016
 						</Link>
@@ -145,6 +146,7 @@ export default function AlgorithmRunner() {
 						<Link
 							className="underline text-blue-400"
 							to="https://github.com/mrprajesh/pacechallenge"
+							target="_blank"
 						>
 							mrprajesh
 						</Link>
