@@ -38,7 +38,7 @@ const ovalWidth = 50;
 const ovalHeight = 15;
 
 export default function CanvasDisplay() {
-	const { bags, edges, isViewRawMode, rawData } = useAppSelector(
+	const { bags, edges, isViewRawMode, rawData, maxWidth } = useAppSelector(
 		(state) => state.display
 	);
 
@@ -59,7 +59,6 @@ export default function CanvasDisplay() {
 	} = useAppSelector((state) => state.global);
 
 	const [simulationDone, setSimulationDone] = React.useState(false);
-
 
 	const [selectionStart, setSelectionStart] = React.useState<{
 		x: number;
@@ -703,14 +702,33 @@ export default function CanvasDisplay() {
 						</Button>
 					</div>
 				</div>
-				<Button
-					onClick={handleClearHighlights}
-					variant="outline"
-					className="text-stone-400 pointer-events-auto"
-					size="icon"
-				>
-					<RotateCcw className="text-stone-400" />
-				</Button>
+				<div className="w-full flex items-center justify-between">
+					<div className="text-stone-400 text-sm flex items-center gap-2">
+						<p>
+							Total Bags:{" "}
+							<span className="font-semibold text-stone-500">{bags.length}</span>
+						</p>
+						<p>
+							Max Width:{" "}
+							<span className="font-semibold text-stone-500">{maxWidth}</span>
+						</p>
+						{/* <Button
+							size="sm"
+							variant="ghost"
+							className="pointer-events-auto"
+						>
+							View Detail
+						</Button> */}
+					</div>
+					<Button
+						onClick={handleClearHighlights}
+						variant="outline"
+						className="text-stone-400 pointer-events-auto"
+						size="icon"
+					>
+						<RotateCcw className="text-stone-400" />
+					</Button>
+				</div>
 			</div>
 
 			{isViewRawMode ? (

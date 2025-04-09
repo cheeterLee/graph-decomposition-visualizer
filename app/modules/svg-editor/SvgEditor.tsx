@@ -905,7 +905,7 @@ export default function SVGEditor({
 					orientation="vertical"
 					className="h-[60%] bg-stone-300"
 				/> */}
-				<Button onClick={handleAddVertex} variant="ghost" size="icon">
+				<Button disabled={!isInEditMode} onClick={handleAddVertex} variant="ghost" size="icon">
 					<Plus className="text-stone-400" />
 				</Button>
 				<Separator

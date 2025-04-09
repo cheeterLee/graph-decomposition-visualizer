@@ -7,6 +7,7 @@ export interface DisplayState {
 	nodes: Array<number>;
 	isViewRawMode: boolean;
 	rawData: string;
+	maxWidth: number;
 }
 
 const initialState: DisplayState = {
@@ -15,6 +16,7 @@ const initialState: DisplayState = {
 	nodes: [],
 	isViewRawMode: false,
 	rawData: "",
+	maxWidth: 0,
 };
 
 const displaySlice = createSlice({
@@ -23,6 +25,10 @@ const displaySlice = createSlice({
 	reducers: {
 		setBags: (state, action: PayloadAction<number[][]>) => {
 			state.bags = action.payload.map((val, idx) => [idx + 1, [...val]]);
+			state.maxWidth = state.bags.reduce(
+				(prev, curr) => Math.max(curr[1].length - 1, prev),
+				0
+			);
 		},
 		setNodes: (state, action: PayloadAction<void>) => {
 			const set = new Set<number>();
