@@ -905,14 +905,24 @@ export default function SVGEditor({
 					orientation="vertical"
 					className="h-[60%] bg-stone-300"
 				/> */}
-				<Button disabled={!isInEditMode} onClick={handleAddVertex} variant="ghost" size="icon">
+				<Button
+					disabled={!isInEditMode}
+					onClick={handleAddVertex}
+					variant="ghost"
+					size="icon"
+				>
 					<Plus className="text-stone-400" />
 				</Button>
 				<Separator
 					orientation="vertical"
 					className="h-[60%] bg-stone-300"
 				/>
-				<Button onClick={handleResetGraph} variant="ghost" size="icon">
+				<Button
+					disabled={!isInEditMode}
+					onClick={handleResetGraph}
+					variant="ghost"
+					size="icon"
+				>
 					<RotateCcw className="text-stone-400" />
 				</Button>
 				<Separator
@@ -957,8 +967,10 @@ export default function SVGEditor({
 			</div>
 
 			{isInEditMode && isNodeSelected && (
-				<div className="absolute border-2 border-stone-300 bottom-1 left-1/2 -translate-x-1/2 h-[50px] 
-				rounded-lg flex items-center justify-between gap-2 px-4 z-20 bg-white">
+				<div
+					className="absolute border-2 border-stone-300 bottom-1 left-1/2 -translate-x-1/2 h-[50px] 
+				rounded-lg flex items-center justify-between gap-2 px-4 z-20 bg-white"
+				>
 					<Button
 						onClick={handleAddEdge}
 						variant="ghost"
@@ -981,8 +993,10 @@ export default function SVGEditor({
 			)}
 
 			{isInEditMode && isEdgeSelected && (
-				<div className="absolute border-2 border-stone-300 bottom-1 left-1/2 -translate-x-1/2 
-				h-[50px] rounded-lg flex items-center justify-between gap-2 px-4 z-20 bg-white">
+				<div
+					className="absolute border-2 border-stone-300 bottom-1 left-1/2 -translate-x-1/2 
+				h-[50px] rounded-lg flex items-center justify-between gap-2 px-4 z-20 bg-white"
+				>
 					<Button
 						onClick={handleDeleteEdge}
 						variant="ghost"
