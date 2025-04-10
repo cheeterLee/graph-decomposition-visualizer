@@ -201,11 +201,12 @@ export default function AlgorithmRunner() {
 					</p>
 				</div>
 
-				<div className="w-full absolute bottom-8 px-16 flex items-center justify-end gap-1">
+				<div className="w-full absolute bottom-8 px-16 flex items-center 
+				justify-end gap-1 pointer-events-none">
 					{hasResult && (
 						<Button
 							className="bg-stone-700 hover:bg-stone-500
-                text-stone-50"
+                text-stone-50 pointer-events-auto"
 							onClick={handleShowResult}
 						>
 							Show Result
@@ -216,7 +217,7 @@ export default function AlgorithmRunner() {
 						<Button
 							variant="destructive"
 							onClick={handleeAbortRunCode}
-							className="text-stone-200"
+							className="text-stone-200 pointer-events-auto"
 						>
 							Stop
 						</Button>
@@ -225,7 +226,7 @@ export default function AlgorithmRunner() {
 						onClick={handleRunCode}
 						disabled={isRunning}
 						className="bg-stone-700 hover:bg-stone-500
-                text-stone-50"
+                text-stone-50 pointer-events-auto"
 					>
 						{isRunning && <Loader2 className="animate-spin" />}
 						Run Code
