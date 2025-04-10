@@ -1,6 +1,5 @@
 import React from "react";
 import { Button } from "~/components/ui/button";
-import CodeSnippet from "./components/CodeSnippet";
 import { Link, useNavigate } from "@remix-run/react";
 import runnerSlice from "./slices/runnerSlice";
 import { useAppDispatch, useAppSelector } from "~/hooks/reduxHooks";
