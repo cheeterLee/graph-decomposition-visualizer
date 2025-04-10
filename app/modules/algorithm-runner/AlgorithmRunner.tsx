@@ -124,7 +124,7 @@ export default function AlgorithmRunner() {
 				</div> */}
 				<div className="w-full max-h-full px-8 py-8 overflow-scroll">
 					<p className="text-stone-400 mb-3 font-semibold">
-						Tree Width Decomposition Visualizer
+						Treewidth Decomposition Visualizer
 					</p>
 					<Separator />
 					<p className="text-stone-400 my-3 font-semibold">
