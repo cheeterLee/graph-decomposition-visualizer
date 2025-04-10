@@ -547,7 +547,7 @@ export default function CanvasDisplay() {
 		return () => {
 			d3.select(canvas).on(".zoom", null);
 		};
-	}, []);
+	}, [isViewRawMode]);
 
 	React.useEffect(() => {
 		drawCanvas();
