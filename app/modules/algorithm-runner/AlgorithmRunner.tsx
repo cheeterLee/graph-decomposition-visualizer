@@ -95,8 +95,8 @@ export default function AlgorithmRunner() {
 			}
 			toast({
 				title: "Successfully decomposed!",
-				duration: 2000
-			})
+				duration: 2000,
+			});
 			dispatch(runnerSlice.actions.setIsRunning(false));
 		};
 
@@ -105,7 +105,7 @@ export default function AlgorithmRunner() {
 			dispatch(runnerSlice.actions.setIsRunning(false));
 			toast({
 				title: "Failed to decompose.",
-			})
+			});
 			worker.terminate();
 		};
 	};
@@ -123,17 +123,35 @@ export default function AlgorithmRunner() {
 					<CodeSnippet />
 				</div> */}
 				<div className="w-full max-h-full px-8 py-8 overflow-scroll">
-					<p className="text-stone-400 mb-2">
-						Tree Width Decomposition
+					<p className="text-stone-400 mb-3 font-semibold">
+						Tree Width Decomposition Visualizer
 					</p>
 					<Separator />
-					<p className="text-stone-400 my-2">
-						A tree width graph decomposition algorithm is a method
-						used to transform a graph into a tree-like structure
-						known as a tree decomposition. This decomposition
-						organizes the graph into interconnected groups of
-						vertices (often called "bags") that satisfy three main
-						properties: <br />
+					<p className="text-stone-400 my-3 font-semibold">
+						The tool is designed to provide a window to run the
+						treewidth decomposition algorithm in an accessible web
+						environment and help the user to identify insights
+						between the decomposed tree and the original graph and
+						visualize the relationship through interactive methods.
+					</p>
+					<Separator />
+					<p className="text-stone-400 my-3">Algorithm Description</p>
+					<Separator />
+					<p className="text-stone-400 my-3">
+						A{" "}
+						<Link
+							to="https://en.wikipedia.org/wiki/Treewidth"
+							target="_blank"
+							className="underline text-blue-400"
+						>
+							treewidth
+						</Link>{" "}
+						graph decomposition algorithm is a method used to
+						transform a graph into a tree-like structure known as a
+						tree decomposition. This decomposition organizes the
+						graph into interconnected groups of vertices (often
+						called "bags") that satisfy three main properties:{" "}
+						<br />
 						<br />
 						1. Every graph vertex appears in at least one bag.
 						<br />
@@ -142,16 +160,16 @@ export default function AlgorithmRunner() {
 						3. For any given vertex, the bags containing that vertex
 						form a connected subtree.
 						<br />
-						<br />
+						{/* <br />
 						The tree width of the graph is determined by the size of
 						the largest bag minus one, and algorithms for tree
 						decomposition aim to minimize this number, which is
 						particularly useful in solving many computational
 						problems more efficiently on graphs that are "close" to
-						being trees.
+						being trees. */}
 					</p>
 					<Separator />
-					<p className="text-stone-400 my-2">
+					<p className="text-stone-400 my-3">
 						Graph and result format are referenced from{" "}
 						<Link
 							className="underline text-blue-400"
@@ -161,7 +179,7 @@ export default function AlgorithmRunner() {
 							PACE 2016
 						</Link>
 					</p>
-					<p className="text-stone-400 mb-2">
+					<p className="text-stone-400 mb-3">
 						The algorithm used is modified from{" "}
 						<Link
 							className="underline text-blue-400"
@@ -171,9 +189,19 @@ export default function AlgorithmRunner() {
 							mrprajesh
 						</Link>
 					</p>
+					<p className="text-stone-400 mb-3">
+						Testing datasets can be found at{" "}
+						<Link
+							className="underline text-blue-400"
+							to="https://github.com/mrprajesh/pacechallenge/tree/master/test"
+							target="_blank"
+						>
+							repo
+						</Link>
+					</p>
 				</div>
 
-				<div className="w-full absolute bottom-16 px-16 flex items-center justify-end gap-1">
+				<div className="w-full absolute bottom-8 px-16 flex items-center justify-end gap-1">
 					{hasResult && (
 						<Button
 							className="bg-stone-700 hover:bg-stone-500
