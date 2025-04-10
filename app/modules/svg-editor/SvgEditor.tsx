@@ -452,6 +452,7 @@ export default function SVGEditor({
 		// setIsUploadDialogOpen(false);
 		dispatch(globalSlice.actions.setHasResult(false));
 		dispatch(globalSlice.actions.setIsInEditMode(true));
+		dispatch(globalSlice.actions.clearGroupsHighlighting())
 		navigate("/app");
 	};
 
