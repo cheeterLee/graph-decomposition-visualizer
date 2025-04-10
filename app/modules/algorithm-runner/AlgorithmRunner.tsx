@@ -9,6 +9,7 @@ import { Loader2 } from "lucide-react";
 import displaySlice from "../canvas-display/slices/displaySlice";
 import globalSlice from "~/globalSlice";
 import { Separator } from "~/components/ui/separator";
+import { useToast } from "~/hooks/use-toast";
 
 export default function AlgorithmRunner() {
 	const { isRunning } = useAppSelector((state: RootState) => state.runner);
@@ -25,11 +26,17 @@ export default function AlgorithmRunner() {
 
 	const navigate = useNavigate();
 
+	const { toast } = useToast();
+
 	// terminate worker when the algorithm is aborted
 	const handleeAbortRunCode = () => {
 		if (!workerRef.current) return;
 		workerRef.current.terminate();
 		dispatch(runnerSlice.actions.setIsRunning(false));
+		toast({
+			title: "Decomposition Aborted!",
+			duration: 2000,
+		});
 	};
 
 	const handleRunCode = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -40,6 +47,12 @@ export default function AlgorithmRunner() {
 			workerRef.current.terminate();
 			workerRef.current = null;
 		}
+
+		toast({
+			title: "Decomposing...",
+			description: "Might take a while :)",
+			duration: 5000,
+		});
 
 		dispatch(runnerSlice.actions.setIsRunning(true));
 
@@ -80,12 +93,20 @@ export default function AlgorithmRunner() {
 				// TODO: navigates fires twice when results exist and user clicks show result before the algorithm finishes running
 				navigate("/app/result");
 			}
+			toast({
+				title: "Successfully decomposed!",
+				duration: 2000
+			})
 			dispatch(runnerSlice.actions.setIsRunning(false));
 		};
 
 		worker.onerror = (error) => {
 			console.error("Worker error:", error);
 			dispatch(runnerSlice.actions.setIsRunning(false));
+			toast({
+				variant: 'destructive',
+				title: "Failed to decompose.",
+			})
 			worker.terminate();
 		};
 	};
@@ -185,7 +206,9 @@ export default function AlgorithmRunner() {
 				</div>
 			</div>
 			<div className="border-2 border-stone-300 w-full row-span-1 rounded-lg shadow-sm">
-				<p className="text-center py-2 text-stone-400 text-xs font-light">© Ziyi Li, University of Leeds, 2025</p>
+				<p className="text-center py-2 text-stone-400 text-xs font-light">
+					© Ziyi Li, University of Leeds, 2025
+				</p>
 			</div>
 		</div>
 	);
