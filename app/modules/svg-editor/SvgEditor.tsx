@@ -131,6 +131,9 @@ export default function SVGEditor({
 		dispatch(editorSlice.actions.setNextVertexId(1));
 		dispatch(editorSlice.actions.setEdges([]));
 		edgesSet.clear();
+		// reset selection box if needed
+		setSampleGraphSelectValueKey(+new Date());
+		setSampleGraphSelectValue(undefined);
 		toast({
 			title: `Graph editor reset!`,
 			duration: 2000,
@@ -452,7 +455,7 @@ export default function SVGEditor({
 		// setIsUploadDialogOpen(false);
 		dispatch(globalSlice.actions.setHasResult(false));
 		dispatch(globalSlice.actions.setIsInEditMode(true));
-		dispatch(globalSlice.actions.clearGroupsHighlighting())
+		dispatch(globalSlice.actions.clearGroupsHighlighting());
 		navigate("/app");
 	};
 
