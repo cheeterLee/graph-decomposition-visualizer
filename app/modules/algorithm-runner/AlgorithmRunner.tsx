@@ -104,7 +104,6 @@ export default function AlgorithmRunner() {
 			console.error("Worker error:", error);
 			dispatch(runnerSlice.actions.setIsRunning(false));
 			toast({
-				variant: 'destructive',
 				title: "Failed to decompose.",
 			})
 			worker.terminate();

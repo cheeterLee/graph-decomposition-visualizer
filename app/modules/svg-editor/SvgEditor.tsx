@@ -41,6 +41,7 @@ import {
 	SelectValue,
 } from "~/components/ui/select";
 import { populateGraphData } from "~/data/dataPopulation";
+import { useToast } from "~/hooks/use-toast";
 
 export default function SVGEditor({
 	defaultRawData,
@@ -104,13 +105,17 @@ export default function SVGEditor({
 
 	const [sampleGraphSelectValueKey, setSampleGraphSelectValueKey] =
 		React.useState(+new Date());
-	const [sampleGraphSelectValue, setSampleGraphSelectValue] =
-		React.useState<string | undefined>(undefined);
+	const [sampleGraphSelectValue, setSampleGraphSelectValue] = React.useState<
+		string | undefined
+	>(undefined);
 
 	// TODO: racing condition
 	const handleSelectSampleGraph = async (val: string) => {
 		const selectedGraphData = populateGraphData(val);
-
+		toast({
+			title: `Sample graph ${val} selected!`,
+			duration: 2000,
+		});
 		setRawData(selectedGraphData);
 		setSampleGraphSelectValue(val);
 	};
@@ -119,11 +124,17 @@ export default function SVGEditor({
 
 	const navigate = useNavigate();
 
+	const { toast } = useToast();
+
 	const handleResetGraph = () => {
 		dispatch(editorSlice.actions.setVertices([]));
 		dispatch(editorSlice.actions.setNextVertexId(1));
 		dispatch(editorSlice.actions.setEdges([]));
 		edgesSet.clear();
+		toast({
+			title: `Graph editor reset!`,
+			duration: 2000,
+		});
 	};
 
 	const handleAddVertex = () => {
@@ -144,6 +155,11 @@ export default function SVGEditor({
 			neighbors: [],
 		};
 
+		toast({
+			title: `Vertex added!`,
+			duration: 2000,
+		});
+
 		dispatch(editorSlice.actions.addVertex(newVertex));
 		dispatch(editorSlice.actions.setNextVertexId(nextVertexId + 1));
 	};
@@ -151,6 +167,7 @@ export default function SVGEditor({
 	const handleAddEdge = (event: React.MouseEvent<HTMLButtonElement>) => {
 		event.stopPropagation();
 		if (!highlightedElement || highlightedElement.type !== "node") return;
+
 		dispatch(editorSlice.actions.enterAddEdgeMode());
 	};
 
@@ -158,6 +175,10 @@ export default function SVGEditor({
 		event.stopPropagation();
 		if (!highlightedElement || highlightedElement.type !== "node") return;
 		const targetNodeId = highlightedElement.id;
+		toast({
+			title: `Vertex deleted!`,
+			duration: 2000,
+		});
 
 		// need to first remove connected edges, then remove the vertex
 		dispatch(editorSlice.actions.removeConnectedEdges(targetNodeId));
@@ -170,6 +191,11 @@ export default function SVGEditor({
 		const targetEdgeId = highlightedElement.id;
 
 		edgesSet.delete(targetEdgeId);
+		toast({
+			title: `Edge deleted!`,
+			duration: 2000,
+		});
+
 		dispatch(editorSlice.actions.removeEdge(targetEdgeId));
 	};
 
@@ -230,7 +256,15 @@ export default function SVGEditor({
 
 	const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
 		const file = event.target.files?.[0];
-		if (!file) return;
+
+		if (!file || !file.name.endsWith(".gr")) {
+			toast({
+				title: "Wrong file type",
+				description: "Only .gr files are accepted.",
+				duration: 2000,
+			});
+			return;
+		}
 
 		const reader = new FileReader();
 
@@ -422,10 +456,14 @@ export default function SVGEditor({
 	};
 
 	const handleFileSubmit = () => {
+		toast({
+			title: "File uploaded successfully",
+			duration: 2000,
+		});
 		setIsUploadDialogOpen(false);
 		// reset sample graph selection box
-        setSampleGraphSelectValueKey(+new Date())
-		setSampleGraphSelectValue(undefined)
+		setSampleGraphSelectValueKey(+new Date());
+		setSampleGraphSelectValue(undefined);
 		renderGraph();
 	};
 
@@ -809,6 +847,11 @@ export default function SVGEditor({
 							editorSlice.actions.setEdges([...edges, newEdge])
 						);
 					}
+
+					toast({
+						title: `Edge added!`,
+						duration: 2000,
+					});
 
 					dispatch(editorSlice.actions.exitAddEdgeMode());
 					dispatch(editorSlice.actions.setHighlightedElement(null));

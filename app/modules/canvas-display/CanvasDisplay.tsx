@@ -724,9 +724,9 @@ export default function CanvasDisplay() {
 						onClick={handleClearHighlights}
 						variant="outline"
 						className="text-stone-400 pointer-events-auto"
-						size="icon"
 					>
 						<RotateCcw className="text-stone-400" />
+						Clear Highlights
 					</Button>
 				</div>
 			</div>
