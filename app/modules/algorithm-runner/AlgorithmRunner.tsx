@@ -53,6 +53,8 @@ export default function AlgorithmRunner() {
 			duration: 5000,
 		});
 
+		console.log('start', new Date())
+
 		dispatch(runnerSlice.actions.setIsRunning(true));
 
 		const worker = new Worker(
@@ -97,6 +99,7 @@ export default function AlgorithmRunner() {
 				duration: 2000,
 			});
 			dispatch(runnerSlice.actions.setIsRunning(false));
+			console.log('end', new Date())
 		};
 
 		worker.onerror = (error) => {
