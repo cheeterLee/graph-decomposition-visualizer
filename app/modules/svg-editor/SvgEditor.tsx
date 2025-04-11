@@ -42,6 +42,7 @@ import {
 import { populateGraphData } from "~/data/dataPopulation";
 import { useToast } from "~/hooks/use-toast";
 import { useWorker } from "../algorithm-runner/context/WorkerContext";
+import { Badge } from "~/components/ui/badge";
 
 export default function SVGEditor({
 	defaultRawData,
@@ -1076,22 +1077,19 @@ export default function SVGEditor({
 						</SelectItem>
 						<SelectItem value="PappusGraph">PappusGraph</SelectItem>
 						<SelectItem value="GoethalsSeidelGraph_2_3">
-							GoethalsSeidelGraph_2_3
+							GoethalsSeidelGraph
 						</SelectItem>
 						<SelectItem value="KittellGraph">
 							KittellGraph
 						</SelectItem>
 						<SelectItem value="SylvesterGraph">
-							SylvesterGraph
+							SylvesterGraph <span className="text-semibold">(est. 2 min)</span>
 						</SelectItem>
 						<SelectItem value="SzekeresSnarkGraph">
-							SzekeresSnarkGraph
+							SzekeresSnarkGraph <span className="text-semibold">(est. 15 min)</span>
 						</SelectItem>
 						<SelectItem value="StarGraph_100">
 							StarGraph_100
-						</SelectItem>
-						<SelectItem value="RingedTree_6">
-							RingedTree_6
 						</SelectItem>
 					</SelectContent>
 				</Select>
