@@ -32,8 +32,8 @@
     "highlight.js": "^11.11.1",
     "isbot": "^4.1.0",
     "lucide-react": "^0.474.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
+    "react": "18.3.0-canary-c3048aab4-20240326",
+    "react-dom": "18.3.0-canary-c3048aab4-20240326",
     "react-redux": "^9.2.0",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7"
