@@ -12,6 +12,9 @@ import { useWindowSize } from "@react-hookz/web";
 import editorSlice from "~/modules/svg-editor/slices/editorSlice";
 import SVGEditor from "~/modules/svg-editor/SvgEditor";
 import React from "react";
+import {
+	WorkerProvider,
+} from "~/modules/algorithm-runner/context/WorkerContext";
 
 export const meta: MetaFunction = () => {
 	return [
@@ -60,8 +63,10 @@ export default function App() {
 			onClick={handleClickOnSpareScreen}
 			className="flex items-center justify-center gap-1 w-screen xl:px-16 lg:px-10 px-4 min-h-screen"
 		>
-			<SVGEditor defaultRawData={data} />
-			<Outlet />
+			<WorkerProvider>
+				<SVGEditor defaultRawData={data} />
+				<Outlet />
+			</WorkerProvider>
 			<div
 				className={`fixed top-0 bottom-0 right-0 left-0 z-30 
 					w-screen h-screen bg-stone-50 text-stone-400 flex items-center justify-center

@@ -1,7 +1,6 @@
 import React from "react";
 import * as d3 from "d3";
 import { useSet } from "~/hooks/useSet";
-import { useMap } from "~/hooks/useMap";
 import { useAppSelector, useAppDispatch } from "~/hooks/reduxHooks";
 import { Button } from "~/components/ui/button";
 import { Separator } from "~/components/ui/separator";
@@ -25,9 +24,9 @@ import {
 	Spline,
 	Upload,
 } from "lucide-react";
-import { Edge, SimLink, SimNode, SvgEditorData, Vertex } from "./types/type";
+import { Edge, SimLink, SimNode, Vertex } from "./types/type";
 import type { RootState } from "~/store";
-import { offset, padding } from "./constants/constant";
+import { offset } from "./constants/constant";
 import editorSlice from "./slices/editorSlice";
 import runnerSlice from "../algorithm-runner/slices/runnerSlice";
 import { useNavigate } from "@remix-run/react";
@@ -42,6 +41,7 @@ import {
 } from "~/components/ui/select";
 import { populateGraphData } from "~/data/dataPopulation";
 import { useToast } from "~/hooks/use-toast";
+import { useWorker } from "../algorithm-runner/context/WorkerContext";
 
 export default function SVGEditor({
 	defaultRawData,
@@ -71,11 +71,15 @@ export default function SVGEditor({
 		isInEditMode,
 	} = useAppSelector((state: RootState) => state.global);
 
+	const { isRunning } = useAppSelector((state: RootState) => state.runner);
+
 	const { bags } = useAppSelector((state: RootState) => state.display);
 
 	const dispatch = useAppDispatch();
 
 	const edgesSet = useSet<string>();
+
+	const workerRef = useWorker();
 
 	const isNodeSelected = highlightedElement?.type === "node";
 	const isEdgeSelected = highlightedElement?.type === "edge";
@@ -99,6 +103,8 @@ export default function SVGEditor({
 
 	const [isUploadDialogOpen, setIsUploadDialogOpen] =
 		React.useState<boolean>(false);
+	const [isUploadFileValid, setIsUploadFileValid] =
+		React.useState<boolean>(false);
 	const [rawData, setRawData] = React.useState<string>(defaultRawData);
 	const [isFileUploadFinished, setIsFileUploadFinished] =
 		React.useState<boolean>(false);
@@ -118,6 +124,8 @@ export default function SVGEditor({
 		});
 		setRawData(selectedGraphData);
 		setSampleGraphSelectValue(val);
+		workerRef.current?.terminate();
+		dispatch(runnerSlice.actions.setIsRunning(false));
 	};
 
 	const [zoomPercentage, setZoomPercentage] = React.useState<number>(100);
@@ -134,6 +142,8 @@ export default function SVGEditor({
 		// reset selection box if needed
 		setSampleGraphSelectValueKey(+new Date());
 		setSampleGraphSelectValue(undefined);
+		workerRef.current?.terminate();
+		dispatch(runnerSlice.actions.setIsRunning(false));
 		toast({
 			title: `Graph editor reset!`,
 			duration: 2000,
@@ -253,8 +263,11 @@ export default function SVGEditor({
 				description: "Only .gr files are accepted.",
 				duration: 2000,
 			});
+			setIsUploadFileValid(false);
 			return;
 		}
+
+		setIsUploadFileValid(true);
 
 		const reader = new FileReader();
 
@@ -447,15 +460,18 @@ export default function SVGEditor({
 	};
 
 	const handleFileSubmit = () => {
-		toast({
-			title: "File uploaded successfully",
-			duration: 2000,
-		});
 		setIsUploadDialogOpen(false);
 		// reset sample graph selection box
 		setSampleGraphSelectValueKey(+new Date());
 		setSampleGraphSelectValue(undefined);
 		renderGraph();
+		workerRef.current?.terminate();
+		dispatch(runnerSlice.actions.setIsRunning(false));
+		setIsUploadFileValid(false);
+		toast({
+			title: "File uploaded successfully",
+			duration: 2000,
+		});
 	};
 
 	const generateSimulationGraphState = (
@@ -979,7 +995,7 @@ export default function SVGEditor({
 					className="h-[60%] bg-stone-300"
 				/> */}
 				<Button
-					disabled={!isInEditMode}
+					disabled={!isInEditMode || isRunning}
 					onClick={handleAddVertex}
 					variant="ghost"
 					size="icon"
@@ -991,7 +1007,7 @@ export default function SVGEditor({
 					className="h-[60%] bg-stone-300"
 				/>
 				<Button
-					disabled={!isInEditMode}
+					disabled={!isInEditMode || isRunning}
 					onClick={handleResetGraph}
 					variant="ghost"
 					size="icon"
@@ -1028,7 +1044,9 @@ export default function SVGEditor({
 						</div>
 						<DialogFooter>
 							<Button
-								disabled={!isFileUploadFinished}
+								disabled={
+									!isFileUploadFinished || !isUploadFileValid
+								}
 								onClick={handleFileSubmit}
 								type="submit"
 							>
@@ -1057,11 +1075,11 @@ export default function SVGEditor({
 							HeawoodGraph
 						</SelectItem>
 						<SelectItem value="PappusGraph">PappusGraph</SelectItem>
-						<SelectItem value="KittellGraph">
-							KittellGraph
-						</SelectItem>
 						<SelectItem value="GoethalsSeidelGraph_2_3">
 							GoethalsSeidelGraph_2_3
+						</SelectItem>
+						<SelectItem value="KittellGraph">
+							KittellGraph
 						</SelectItem>
 						<SelectItem value="SylvesterGraph">
 							SylvesterGraph
@@ -1073,7 +1091,7 @@ export default function SVGEditor({
 				</Select>
 			</div>
 
-			{isInEditMode && isNodeSelected && (
+			{isInEditMode && !isRunning && isNodeSelected && (
 				<div
 					className="absolute border-2 border-stone-300 bottom-1 left-1/2 -translate-x-1/2 h-[50px] 
 				rounded-lg flex items-center justify-between gap-2 px-4 z-20 bg-white"
@@ -1099,7 +1117,7 @@ export default function SVGEditor({
 				</div>
 			)}
 
-			{isInEditMode && isEdgeSelected && (
+			{isInEditMode && !isRunning && isEdgeSelected && (
 				<div
 					className="absolute border-2 border-stone-300 bottom-1 left-1/2 -translate-x-1/2 
 				h-[50px] rounded-lg flex items-center justify-between gap-2 px-4 z-20 bg-white"

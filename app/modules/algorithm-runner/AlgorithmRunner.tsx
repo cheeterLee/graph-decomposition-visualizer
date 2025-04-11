@@ -9,6 +9,7 @@ import displaySlice from "../canvas-display/slices/displaySlice";
 import globalSlice from "~/globalSlice";
 import { Separator } from "~/components/ui/separator";
 import { useToast } from "~/hooks/use-toast";
+import { useWorker } from "./context/WorkerContext";
 
 export default function AlgorithmRunner() {
 	const { isRunning } = useAppSelector((state: RootState) => state.runner);
@@ -19,7 +20,8 @@ export default function AlgorithmRunner() {
 		(state: RootState) => state.editor
 	);
 
-	const workerRef = React.useRef<Worker | null>(null);
+	// const workerRef = React.useRef<Worker | null>(null);
+	const workerRef = useWorker();
 
 	const dispatch = useAppDispatch();
 
@@ -29,7 +31,7 @@ export default function AlgorithmRunner() {
 
 	// terminate worker when the algorithm is aborted
 	const handleeAbortRunCode = () => {
-		if (!workerRef.current) return;
+		if (!workerRef || !workerRef.current) return;
 		workerRef.current.terminate();
 		dispatch(runnerSlice.actions.setIsRunning(false));
 		toast({
@@ -40,7 +42,7 @@ export default function AlgorithmRunner() {
 
 	const handleRunCode = (event: React.MouseEvent<HTMLButtonElement>) => {
 		event.stopPropagation();
-
+		
 		// destroy previous web worker
 		if (workerRef.current) {
 			workerRef.current.terminate();

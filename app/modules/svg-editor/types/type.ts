@@ -19,13 +19,6 @@ export interface SimNode extends SimulationNodeDatum {
 
 export interface SimLink extends SimulationLinkDatum<SimNode> {}
 
-export type SvgEditorData = {
-	data: Vertex[];
-	e: [number, number][];
-	g: Map<number, Vertex>;
-	maxId: number;
-};
-
 export type CursorMode = "pointer" | "grab";
 
 export type HighlightedElement =
