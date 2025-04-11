@@ -219,25 +219,12 @@ export default function SVGEditor({
 
 		const nodeDragged = event.subject as Vertex;
 
-		const svgRect = svgContainerRef.current.getBoundingClientRect();
-		const svgRectWidth = svgRect.width;
-		const svgRectHeight = svgRect.height;
-
-		const clampedX = Math.max(
-			padding,
-			Math.min(event.x, svgRectWidth - padding)
-		);
-		const clampedY = Math.max(
-			padding,
-			Math.min(event.y, svgRectHeight - padding)
-		);
-
 		dispatch(
 			editorSlice.actions.setVertices(
 				vertices.map((v) =>
 					v.id !== nodeDragged.id
 						? v
-						: { ...v, cx: clampedX, cy: clampedY }
+						: { ...v, cx: event.x, cy: event.y }
 				)
 			)
 		);
@@ -385,30 +372,30 @@ export default function SVGEditor({
 		// console.log("sim nodes", simulationNodes);
 		// console.log("sim links", simulationLinks);
 
-		function boundingForce() {
-			let nodes: SimNode[] = [];
-			let width: number, height: number;
+		// function boundingForce() {
+		// 	let nodes: SimNode[] = [];
+		// 	let width: number, height: number;
 
-			function force(alpha: number) {
-				nodes.forEach((node) => {
-					// Clamp node.x and node.y to be within [0, width] and [0, height]
-					node.x = Math.max(10, Math.min(width, node.x!));
-					node.y = Math.max(10, Math.min(height, node.y!));
-				});
-			}
+		// 	function force(alpha: number) {
+		// 		nodes.forEach((node) => {
+		// 			// Clamp node.x and node.y to be within [0, width] and [0, height]
+		// 			node.x = Math.max(10, Math.min(width, node.x!));
+		// 			node.y = Math.max(10, Math.min(height, node.y!));
+		// 		});
+		// 	}
 
-			// Called by D3 to initialize the force.
-			force.initialize = (n: SimNode[]) => {
-				nodes = n;
-				// Update the dimensions in case the container size changed
-				const svgRect =
-					svgContainerRef.current!.getBoundingClientRect();
-				width = svgRect.width;
-				height = svgRect.height;
-			};
+		// 	// Called by D3 to initialize the force.
+		// 	force.initialize = (n: SimNode[]) => {
+		// 		nodes = n;
+		// 		// Update the dimensions in case the container size changed
+		// 		const svgRect =
+		// 			svgContainerRef.current!.getBoundingClientRect();
+		// 		width = svgRect.width;
+		// 		height = svgRect.height;
+		// 	};
 
-			return force;
-		}
+		// 	return force;
+		// }
 
 		const simulation = d3
 			.forceSimulation<SimNode>(simulationNodes)
@@ -424,7 +411,7 @@ export default function SVGEditor({
 			.force("charge", d3.forceManyBody().strength(-30))
 			.force("center", d3.forceCenter(width / 2, height / 2))
 			.force("collide", d3.forceCollide(60))
-			.force("bounding", boundingForce())
+			// .force("bounding", boundingForce())
 			.stop();
 
 		simulation.tick(
@@ -529,6 +516,7 @@ export default function SVGEditor({
 			.create("svg")
 			.attr("width", svgContainerRef.current.clientWidth)
 			.attr("height", svgContainerRef.current.clientHeight);
+		// .style("border", "2px solid orange");
 		svgRef.current = svg;
 
 		const graphGroup = svg.append("g").attr("class", "graph-group");
