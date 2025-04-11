@@ -116,6 +116,8 @@ export default function SVGEditor({
 		string | undefined
 	>(undefined);
 
+	const initPosRef = React.useRef<{ x: number; y: number }>({ x: -1, y: -1 });
+
 	// TODO: racing condition
 	const handleSelectSampleGraph = async (val: string) => {
 		const selectedGraphData = populateGraphData(val);
@@ -130,6 +132,8 @@ export default function SVGEditor({
 	};
 
 	const [zoomPercentage, setZoomPercentage] = React.useState<number>(100);
+
+	const isClickRef = React.useRef<boolean>(false);
 
 	const navigate = useNavigate();
 
@@ -213,7 +217,10 @@ export default function SVGEditor({
 		dispatch(editorSlice.actions.removeEdge(targetEdgeId));
 	};
 
-	const dragStarted = (event: d3.D3DragEvent<Element, Vertex, unknown>) => {
+	const dragStarted = (event: d3.D3DragEvent<Element, Vertex, Vertex>) => {
+		initPosRef.current.x = event.x;
+		initPosRef.current.y = event.y;
+
 		const group = d3
 			.select(event.sourceEvent.target.parentNode as SVGGElement)
 			.classed("dragging", true)
@@ -241,7 +248,14 @@ export default function SVGEditor({
 		);
 	};
 
-	const dragEnded = (event: d3.D3DragEvent<Element, Vertex, unknown>) => {
+	const dragEnded = (
+		event: d3.D3DragEvent<Element, Vertex, Vertex>,
+		d: Vertex
+	) => {
+		// console.log('d', d)
+
+		// console.log("init", initPosRef.current);
+		// console.log("event", event);
 		const group = d3
 			.select(event.sourceEvent.target.parentNode as SVGGElement)
 			.classed("dragging", false)
@@ -253,6 +267,120 @@ export default function SVGEditor({
 		group
 			.select("text")
 			.attr("stroke", colorPalette.lightTheme.vertexBorder);
+
+		if (
+			initPosRef.current.x === event.x &&
+			initPosRef.current.y === event.y
+		) {
+			// console.log("is click!");
+			if (highlightedGroups.length || previewHighlightedGroups.length) {
+				dispatch(globalSlice.actions.clearGroupsHighlighting())
+				dispatch(globalSlice.actions.clearPreviewHighlight())
+				dispatch(globalSlice.actions.clearHighlight())
+			}
+
+			// click logic
+			if (isAddEdgeMode && d.id !== highlightedElement?.id) {
+				if (!highlightedElement) return;
+				const sourceNodeId = highlightedElement.id;
+				if (typeof sourceNodeId !== "number") return;
+
+				const newEdgeId = `${Math.min(d.id, sourceNodeId)}-${Math.max(
+					d.id,
+					sourceNodeId
+				)}`;
+
+				if (!edgesSet.has(newEdgeId)) {
+					edgesSet.add(newEdgeId);
+					const newEdge: Edge = {
+						id: newEdgeId,
+						uId: Math.min(d.id, sourceNodeId),
+						vId: Math.max(d.id, sourceNodeId),
+					};
+
+					dispatch(
+						editorSlice.actions.setVertices(
+							vertices.map((v) => {
+								if (v.id === sourceNodeId) {
+									return {
+										...v,
+										neighbors: [...v.neighbors, d.id],
+									};
+								} else if (v.id === d.id) {
+									return {
+										...v,
+										neighbors: [
+											...v.neighbors,
+											sourceNodeId,
+										],
+									};
+								} else {
+									return v;
+								}
+							})
+						)
+					);
+
+					dispatch(editorSlice.actions.setEdges([...edges, newEdge]));
+				}
+
+				toast({
+					title: `Edge added!`,
+					duration: 2000,
+				});
+
+				dispatch(editorSlice.actions.exitAddEdgeMode());
+				dispatch(editorSlice.actions.setHighlightedElement(null));
+				return;
+			}
+
+			if (
+				highlightedElement?.type === "node" &&
+				highlightedElement.id === d.id
+			) {
+				dispatch(editorSlice.actions.setHighlightedElement(null));
+				dispatch(editorSlice.actions.exitAddEdgeMode());
+
+				// TODO: cancel highlight node to compare
+				dispatch(globalSlice.actions.setHasHighlightedNode(false));
+				dispatch(globalSlice.actions.setHighlightedNodeId(-1));
+			} else {
+				dispatch(
+					editorSlice.actions.setHighlightedElement({
+						type: "node",
+						id: d.id,
+					})
+				);
+
+				// TODO: highlight node to compare
+				if (hasResult) {
+					dispatch(globalSlice.actions.setHasHighlightedNode(true));
+					dispatch(globalSlice.actions.setHighlightedNodeId(d.id));
+				}
+			}
+
+			// reset ref
+			initPosRef.current.x = -1;
+			initPosRef.current.y = -1;
+			return;
+		}
+
+		// console.log("is drag!");
+
+		// const group = d3
+		// 	.select(event.sourceEvent.target.parentNode as SVGGElement)
+		// 	.classed("dragging", false)
+		// 	.raise();
+
+		// group
+		// 	.select("circle")
+		// 	.attr("stroke", colorPalette.lightTheme.vertexBorder);
+		// group
+		// 	.select("text")
+		// 	.attr("stroke", colorPalette.lightTheme.vertexBorder);
+
+		initPosRef.current.x = -1;
+		initPosRef.current.y = -1;
 	};
 
 	const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -609,6 +737,11 @@ export default function SVGEditor({
 			.attr("stroke-width", 3)
 			.on("click", function (event: MouseEvent, d) {
 				event.stopPropagation();
+				if (highlightedGroups.length || previewHighlightedGroups.length) {
+					dispatch(globalSlice.actions.clearGroupsHighlighting())
+					dispatch(globalSlice.actions.clearPreviewHighlight())
+					dispatch(globalSlice.actions.clearHighlight())
+				}
 				const edgeKey = `${Math.min(d.uId, d.vId)}-${Math.max(
 					d.uId,
 					d.vId
@@ -808,94 +941,94 @@ export default function SVGEditor({
 					.on("drag", dragged)
 					.on("end", dragEnded)
 			)
-			.on("click", function (event: MouseEvent, d) {
-				event.stopPropagation();
+			// .on("click", function (event: MouseEvent, d) {
+			// 	event.stopPropagation();
 
-				if (isAddEdgeMode && d.id !== highlightedElement?.id) {
-					if (!highlightedElement) return;
-					const sourceNodeId = highlightedElement.id;
-					if (typeof sourceNodeId !== "number") return;
+			// 	if (isAddEdgeMode && d.id !== highlightedElement?.id) {
+			// 		if (!highlightedElement) return;
+			// 		const sourceNodeId = highlightedElement.id;
+			// 		if (typeof sourceNodeId !== "number") return;
 
-					const newEdgeId = `${Math.min(
-						d.id,
-						sourceNodeId
-					)}-${Math.max(d.id, sourceNodeId)}`;
+			// 		const newEdgeId = `${Math.min(
+			// 			d.id,
+			// 			sourceNodeId
+			// 		)}-${Math.max(d.id, sourceNodeId)}`;
 
-					if (!edgesSet.has(newEdgeId)) {
-						edgesSet.add(newEdgeId);
-						const newEdge: Edge = {
-							id: newEdgeId,
-							uId: Math.min(d.id, sourceNodeId),
-							vId: Math.max(d.id, sourceNodeId),
-						};
+			// 		if (!edgesSet.has(newEdgeId)) {
+			// 			edgesSet.add(newEdgeId);
+			// 			const newEdge: Edge = {
+			// 				id: newEdgeId,
+			// 				uId: Math.min(d.id, sourceNodeId),
+			// 				vId: Math.max(d.id, sourceNodeId),
+			// 			};
 
-						dispatch(
-							editorSlice.actions.setVertices(
-								vertices.map((v) => {
-									if (v.id === sourceNodeId) {
-										return {
-											...v,
-											neighbors: [...v.neighbors, d.id],
-										};
-									} else if (v.id === d.id) {
-										return {
-											...v,
-											neighbors: [
-												...v.neighbors,
-												sourceNodeId,
-											],
-										};
-									} else {
-										return v;
-									}
-								})
-							)
-						);
+			// 			dispatch(
+			// 				editorSlice.actions.setVertices(
+			// 					vertices.map((v) => {
+			// 						if (v.id === sourceNodeId) {
+			// 							return {
+			// 								...v,
+			// 								neighbors: [...v.neighbors, d.id],
+			// 							};
+			// 						} else if (v.id === d.id) {
+			// 							return {
+			// 								...v,
+			// 								neighbors: [
+			// 									...v.neighbors,
+			// 									sourceNodeId,
+			// 								],
+			// 							};
+			// 						} else {
+			// 							return v;
+			// 						}
+			// 					})
+			// 				)
+			// 			);
 
-						dispatch(
-							editorSlice.actions.setEdges([...edges, newEdge])
-						);
-					}
+			// 			dispatch(
+			// 				editorSlice.actions.setEdges([...edges, newEdge])
+			// 			);
+			// 		}
 
-					toast({
-						title: `Edge added!`,
-						duration: 2000,
-					});
+			// 		toast({
+			// 			title: `Edge added!`,
+			// 			duration: 2000,
+			// 		});
 
-					dispatch(editorSlice.actions.exitAddEdgeMode());
-					dispatch(editorSlice.actions.setHighlightedElement(null));
-					return;
-				}
+			// 		dispatch(editorSlice.actions.exitAddEdgeMode());
+			// 		dispatch(editorSlice.actions.setHighlightedElement(null));
+			// 		return;
+			// 	}
 
-				if (
-					highlightedElement?.type === "node" &&
-					highlightedElement.id === d.id
-				) {
-					dispatch(editorSlice.actions.setHighlightedElement(null));
-					dispatch(editorSlice.actions.exitAddEdgeMode());
+			// 	if (
+			// 		highlightedElement?.type === "node" &&
+			// 		highlightedElement.id === d.id
+			// 	) {
+			// 		dispatch(editorSlice.actions.setHighlightedElement(null));
+			// 		dispatch(editorSlice.actions.exitAddEdgeMode());
 
-					// TODO: cancel highlight node to compare
-					dispatch(globalSlice.actions.setHasHighlightedNode(false));
-					dispatch(globalSlice.actions.setHighlightedNodeId(-1));
-				} else {
-					dispatch(
-						editorSlice.actions.setHighlightedElement({
-							type: "node",
-							id: d.id,
-						})
-					);
+			// 		// TODO: cancel highlight node to compare
+			// 		dispatch(globalSlice.actions.setHasHighlightedNode(false));
+			// 		dispatch(globalSlice.actions.setHighlightedNodeId(-1));
+			// 	} else {
+			// 		dispatch(
+			// 			editorSlice.actions.setHighlightedElement({
+			// 				type: "node",
+			// 				id: d.id,
+			// 			})
+			// 		);
 
-					// TODO: highlight node to compare
-					if (hasResult) {
-						dispatch(
-							globalSlice.actions.setHasHighlightedNode(true)
-						);
-						dispatch(
-							globalSlice.actions.setHighlightedNodeId(d.id)
-						);
-					}
-				}
-			})
+			// 		// TODO: highlight node to compare
+			// 		if (hasResult) {
+			// 			dispatch(
+			// 				globalSlice.actions.setHasHighlightedNode(true)
+			// 			);
+			// 			dispatch(
+			// 				globalSlice.actions.setHighlightedNodeId(d.id)
+			// 			);
+			// 		}
+			// 	}
+			// })
 			.classed(
 				"highlighted-node",
 				(d) =>
