@@ -430,7 +430,7 @@ export default function CanvasDisplay() {
 
 			// Draw the oval using the canvas ellipse API.
 			context.beginPath();
-			context.ellipse(x, y, ovalWidth, ovalHeight, 0, 0, 2 * Math.PI);
+			context.ellipse(x, y, values.length * 10, ovalHeight, 0, 0, 2 * Math.PI);
 
 			if (hasHighlightedNode) {
 				if (values.includes(highlightedNodeId)) {
