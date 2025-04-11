@@ -188,7 +188,7 @@ export default function AlgorithmRunner() {
 							mrprajesh
 						</Link>
 					</p>
-					<p className="text-stone-400 mb-3">
+					<p className="text-stone-400 mb-1">
 						Testing datasets can be found at{" "}
 						<Link
 							className="underline text-blue-400"
@@ -197,6 +197,9 @@ export default function AlgorithmRunner() {
 						>
 							repo
 						</Link>
+					</p>
+					<p className="text-stone-400 mb-3 text-xs font-semibold">
+						Complicated graphs can take longer than 20 mins to decompose.
 					</p>
 				</div>
 

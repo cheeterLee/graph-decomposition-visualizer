@@ -1,4 +1,5 @@
-import createTreeWidthAlgoModule from "../../app/modules/algorithm-runner/wasm/wasmTreeWidthAlgo";
+// import createTreeWidthAlgoModule from "../../app/modules/algorithm-runner/wasm/wasmTreeWidthAlgo";
+import createTreeWidthAlgoModule from "../../app/modules/algorithm-runner/wasm/treeWidthAlgo";
 
 onmessage = function (msg) {
 	if (msg.data.type === "RUN_TREE_WIDTH") {

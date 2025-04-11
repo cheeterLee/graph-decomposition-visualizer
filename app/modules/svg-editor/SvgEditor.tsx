@@ -1062,15 +1062,25 @@ export default function SVGEditor({
 						<SelectValue placeholder="Sample Graphs" />
 					</SelectTrigger>
 					<SelectContent className="text-stone-400">
-						<SelectItem value="HeawoodGraph">
-							HeawoodGraph
-						</SelectItem>
 						<SelectItem value="GrotzschGraph">
 							GrotzschGraph
 						</SelectItem>
+						<SelectItem value="HeawoodGraph">
+							HeawoodGraph
+						</SelectItem>
 						<SelectItem value="PappusGraph">PappusGraph</SelectItem>
-						<SelectItem value="KittellGraph">KittellGraph</SelectItem>
-						<SelectItem value="RingedTree_6">RingedTree_6</SelectItem>
+						<SelectItem value="KittellGraph">
+							KittellGraph
+						</SelectItem>
+						<SelectItem value="GoethalsSeidelGraph_2_3">
+							GoethalsSeidelGraph_2_3
+						</SelectItem>
+						<SelectItem value="SylvesterGraph">
+							SylvesterGraph
+						</SelectItem>
+						<SelectItem value="RingedTree_6">
+							RingedTree_6
+						</SelectItem>
 					</SelectContent>
 				</Select>
 			</div>
