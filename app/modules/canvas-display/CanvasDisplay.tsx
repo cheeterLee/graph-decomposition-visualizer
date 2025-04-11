@@ -300,12 +300,45 @@ export default function CanvasDisplay() {
 			d3.select(canvasRef.current)
 				.transition()
 				.call(zoomRef.current.scaleBy, 1.2);
+
+			// const canvas = canvasRef.current;
+
+			// const transform = transformRef.current || d3.zoomIdentity;
+
+			// // Calculate the center of the current view in canvas coordinates
+			// const canvasWidth = canvas.getBoundingClientRect().width;
+			// const canvasHeight = canvas.getBoundingClientRect().height;
+
+			// const centerX = transform.invertX(canvasWidth / 2);
+			// const centerY = transform.invertY(canvasHeight / 2);
+
+			// // Zoom relative to the center of the current view
+			// d3.select(canvas)
+			// 	.transition()
+			// 	.call(zoomRef.current.scaleBy, 1.2, [centerX, centerY]);
 		}
 	};
 
 	const handleZoomOut = (e: React.SyntheticEvent) => {
 		e.stopPropagation();
 		if (canvasRef.current && zoomRef.current) {
+			// d3.select(canvasRef.current)
+			// 	.transition()
+			// 	.call(zoomRef.current.scaleBy, 1 / 1.2);
+
+			// const canvas = canvasRef.current;
+
+			// // Use the current transform or default to identity
+			// const transform = transformRef.current || d3.zoomIdentity;
+
+			// // Calculate the center of the current view in canvas coordinates
+			// const canvasWidth = canvas.getBoundingClientRect().width;
+			// const canvasHeight = canvas.getBoundingClientRect().height;
+
+			// const centerX = transform.invertX(canvasWidth / 2);
+			// const centerY = transform.invertY(canvasHeight / 2);
+
+			// Zoom relative to the center of the current view
 			d3.select(canvasRef.current)
 				.transition()
 				.call(zoomRef.current.scaleBy, 1 / 1.2);
@@ -507,47 +540,57 @@ export default function CanvasDisplay() {
 		}
 	};
 
+	const handleZoom = React.useCallback(() => {
+		if (!canvasRef.current || !transformRef.current) return;
+	
+		const canvas = canvasRef.current;
+		const context = canvas.getContext("2d");
+		if (!context) return;
+	
+		// Clear the canvas
+		const canvasWidth = canvas.getBoundingClientRect().width;
+		const canvasHeight = canvas.getBoundingClientRect().height;
+		context.clearRect(0, 0, canvasWidth, canvasHeight);
+	
+		// Apply the current transform
+		const transform = transformRef.current;
+		context.save();
+		context.setTransform(transform.k, 0, 0, transform.k, transform.x, transform.y);
+	
+		// Redraw the canvas content
+		drawCanvas();
+	
+		context.restore();
+	}, [drawCanvas]);
+
 	React.useEffect(() => {
 		if (!canvasRef.current) return;
-
+	
 		const canvas = canvasRef.current;
-
-		const zoom = d3
-			.zoom<HTMLCanvasElement, unknown>()
+	
+		// Initialize d3.zoom
+		const zoom = d3.zoom<HTMLCanvasElement, unknown>()
 			.scaleExtent([0.1, 10])
 			.on("zoom", (event) => {
-				const canvasWidth = canvas.getBoundingClientRect().width;
-				const canvasHeight = canvas.getBoundingClientRect().height;
-
-				const centerX = canvasWidth / 2;
-				const centerY = canvasHeight / 2;
-
-				// transformRef.current = d3.zoomIdentity.scale(event.transform.k);
-				const transform = event.transform;
-				transformRef.current = d3.zoomIdentity
-					.translate(centerX, centerY)
-					.scale(transform.k)
-					.translate(-centerX, -centerY);
-
-				drawCanvas();
+				transformRef.current = event.transform;
+				handleZoom();
 				setZoomPercentage(Math.round(event.transform.k * 100));
 			});
-
+	
 		zoomRef.current = zoom;
-
-		// apply zoom behavior to the canvas
+	
+		// Apply zoom behavior to the canvas
 		d3.select(canvas).call(zoom);
-
-		// Disable panning by removing drag-related events
+	
 		d3.select(canvas)
 			.on("mousedown.zoom", null)
 			.on("mousemove.zoom", null)
 			.on("dblclick.zoom", null);
-
+	
 		return () => {
 			d3.select(canvas).on(".zoom", null);
 		};
-	}, [isViewRawMode]);
+	}, [handleZoom, isViewRawMode]);
 
 	React.useEffect(() => {
 		drawCanvas();
@@ -706,11 +749,15 @@ export default function CanvasDisplay() {
 					<div className="text-stone-400 text-sm flex items-center gap-2">
 						<p>
 							Total Bags:{" "}
-							<span className="font-semibold text-stone-500">{bags.length}</span>
+							<span className="font-semibold text-stone-500">
+								{bags.length}
+							</span>
 						</p>
 						<p>
 							Max Width:{" "}
-							<span className="font-semibold text-stone-500">{maxWidth}</span>
+							<span className="font-semibold text-stone-500">
+								{maxWidth}
+							</span>
 						</p>
 						{/* <Button
 							size="sm"
