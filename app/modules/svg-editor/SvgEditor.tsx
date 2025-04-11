@@ -1069,6 +1069,8 @@ export default function SVGEditor({
 							GrotzschGraph
 						</SelectItem>
 						<SelectItem value="PappusGraph">PappusGraph</SelectItem>
+						<SelectItem value="KittellGraph">KittellGraph</SelectItem>
+						<SelectItem value="RingedTree_6">RingedTree_6</SelectItem>
 					</SelectContent>
 				</Select>
 			</div>
