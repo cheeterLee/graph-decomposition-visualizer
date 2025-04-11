@@ -15,6 +15,7 @@ import displaySlice from "./slices/displaySlice";
 import globalSlice from "~/globalSlice";
 import editorSlice from "../svg-editor/slices/editorSlice";
 import { colorPalette } from "~/lib/config";
+import { useToast } from "~/hooks/use-toast";
 
 // Define a node type used by the simulation.
 interface NodeDatum {
@@ -76,6 +77,8 @@ export default function CanvasDisplay() {
 	const dispatch = useAppDispatch();
 
 	const navigate = useNavigate();
+
+	const { toast } = useToast();
 
 	const canvasRef = React.useRef<HTMLCanvasElement>(null);
 
@@ -278,6 +281,10 @@ export default function CanvasDisplay() {
 	};
 
 	const handleDownload = () => {
+		toast({
+			title: "Starting download!",
+			duration: 2000,
+		});
 		// create a Blob with the content, specifying the MIME type.
 		const blob = new Blob([rawData], { type: "text/plain;charset=utf-8" });
 
@@ -355,6 +362,10 @@ export default function CanvasDisplay() {
 
 	const handleCopyRawData = () => {
 		window.navigator.clipboard.writeText(rawData);
+		toast({
+			title: "Copied to clipboard!",
+			duration: 2000,
+		});
 	};
 
 	const handleSelectAsAGroup = (e: React.MouseEvent) => {
@@ -430,7 +441,15 @@ export default function CanvasDisplay() {
 
 			// Draw the oval using the canvas ellipse API.
 			context.beginPath();
-			context.ellipse(x, y, values.length * 10, ovalHeight, 0, 0, 2 * Math.PI);
+			context.ellipse(
+				x,
+				y,
+				values.length * 10,
+				ovalHeight,
+				0,
+				0,
+				2 * Math.PI
+			);
 
 			if (hasHighlightedNode) {
 				if (values.includes(highlightedNodeId)) {
@@ -542,51 +561,59 @@ export default function CanvasDisplay() {
 
 	const handleZoom = React.useCallback(() => {
 		if (!canvasRef.current || !transformRef.current) return;
-	
+
 		const canvas = canvasRef.current;
 		const context = canvas.getContext("2d");
 		if (!context) return;
-	
+
 		// Clear the canvas
 		const canvasWidth = canvas.getBoundingClientRect().width;
 		const canvasHeight = canvas.getBoundingClientRect().height;
 		context.clearRect(0, 0, canvasWidth, canvasHeight);
-	
+
 		// Apply the current transform
 		const transform = transformRef.current;
 		context.save();
-		context.setTransform(transform.k, 0, 0, transform.k, transform.x, transform.y);
-	
+		context.setTransform(
+			transform.k,
+			0,
+			0,
+			transform.k,
+			transform.x,
+			transform.y
+		);
+
 		// Redraw the canvas content
 		drawCanvas();
-	
+
 		context.restore();
 	}, [drawCanvas]);
 
 	React.useEffect(() => {
 		if (!canvasRef.current) return;
-	
+
 		const canvas = canvasRef.current;
-	
+
 		// Initialize d3.zoom
-		const zoom = d3.zoom<HTMLCanvasElement, unknown>()
+		const zoom = d3
+			.zoom<HTMLCanvasElement, unknown>()
 			.scaleExtent([0.1, 10])
 			.on("zoom", (event) => {
 				transformRef.current = event.transform;
 				handleZoom();
 				setZoomPercentage(Math.round(event.transform.k * 100));
 			});
-	
+
 		zoomRef.current = zoom;
-	
+
 		// Apply zoom behavior to the canvas
 		d3.select(canvas).call(zoom);
-	
+
 		d3.select(canvas)
 			.on("mousedown.zoom", null)
 			.on("mousemove.zoom", null)
 			.on("dblclick.zoom", null);
-	
+
 		return () => {
 			d3.select(canvas).on(".zoom", null);
 		};
