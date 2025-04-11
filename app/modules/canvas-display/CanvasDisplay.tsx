@@ -781,7 +781,7 @@ export default function CanvasDisplay() {
 			{isViewRawMode ? (
 				<div className="w-full h-full flex items-center justify-center">
 					<div
-						className="w-1/2 h-1/2 relative overflow-scroll border-2 border-stone-200 rounded-lg 
+						className="w-2/3 h-1/2 relative overflow-scroll border-2 border-stone-200 rounded-lg 
 					py-4 px-6 shadow-sm"
 					>
 						<Button
