@@ -768,7 +768,7 @@ export default function CanvasDisplay() {
 							</Button>
 						</div>
 					)}
-					<div className="absolute bottom-2 left-2 flex items-center gap-2 border-2 border-stone-200 rounded-lg p-1 shadow-sm">
+					<div className="absolute bottom-2 left-2 flex items-center gap-2 border-2 border-stone-200 rounded-lg p-1 shadow-sm z-10 bg-white">
 						<Button
 							onClick={handleZoomOut}
 							variant="ghost"
@@ -791,7 +791,7 @@ export default function CanvasDisplay() {
 					</div>
 				</div>
 			)}
-			<div className="pointer-events-none absolute border-2 rounded-lg border-stone-300 bottom-1 right-1 text-stone-400 text-xs p-2 z-10">
+			<div className="pointer-events-none absolute border-2 rounded-lg border-stone-300 bottom-1 right-1 text-stone-400 text-xs p-2 z-10 bg-white">
 				<p className="font-semibold">Actions supported</p>
 				<p>1. Highlight one bag to view nodes contained.</p>
 				<p>2. Highlight one group of bag to view nodes contained.</p>

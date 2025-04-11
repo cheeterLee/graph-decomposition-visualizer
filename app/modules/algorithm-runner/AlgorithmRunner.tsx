@@ -204,7 +204,7 @@ export default function AlgorithmRunner() {
 						</Link>
 					</p>
 					<p className="text-stone-400 mb-3 text-xs font-semibold">
-						Complicated graphs can take longer than 20 mins to decompose.
+						Complicated graphs will take longer time to decompose.
 					</p>
 				</div>
 

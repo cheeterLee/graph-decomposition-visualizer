@@ -940,7 +940,7 @@ export default function SVGEditor({
 			ref={svgContainerRef}
 			className="relative border-2 border-stone-300 flex-1 h-[700px] rounded-lg shadow-sm"
 		>
-			<div className="absolute border-2 border-stone-300 top-1 left-1/2 -translate-x-1/2 h-[50px] rounded-lg flex items-center gap-2 px-4">
+			<div className="absolute border-2 border-stone-300 top-1 left-1/2 -translate-x-1/2 h-[50px] rounded-lg flex items-center gap-2 px-4 z-10 bg-white">
 				{/* {cursorMode === "pointer" ? (
 					<Button
 						variant="ghost"
@@ -1084,6 +1084,12 @@ export default function SVGEditor({
 						<SelectItem value="SylvesterGraph">
 							SylvesterGraph
 						</SelectItem>
+						<SelectItem value="SzekeresSnarkGraph">
+							SzekeresSnarkGraph
+						</SelectItem>
+						<SelectItem value="StarGraph_100">
+							StarGraph_100
+						</SelectItem>
 						<SelectItem value="RingedTree_6">
 							RingedTree_6
 						</SelectItem>
@@ -1133,14 +1139,14 @@ export default function SVGEditor({
 			)}
 
 			{isInEditMode ? (
-				<div className="pointer-events-none absolute border-2 rounded-lg border-stone-300 bottom-1 right-1 text-stone-400 text-xs p-2 z-10">
+				<div className="pointer-events-none absolute border-2 rounded-lg border-stone-300 bottom-1 right-1 text-stone-400 text-xs p-2 z-10 bg-white">
 					<p className="font-semibold">Actions supported</p>
 					<p>1. Build or edit the graph.</p>
 					<p>2. Upload a .gr file that generates a graph.</p>
 					<p>3. Drag and drop nodes for a clearer layout.</p>
 				</div>
 			) : (
-				<div className="pointer-events-none absolute border-2 rounded-lg border-stone-300 bottom-1 right-1 text-stone-400 text-xs p-2 z-10">
+				<div className="pointer-events-none absolute border-2 rounded-lg border-stone-300 bottom-1 right-1 text-stone-400 text-xs p-2 z-10 bg-white">
 					<p className="font-semibold">Actions supported</p>
 					<p>
 						1. Highlight one node to view bags containing that node.
@@ -1151,7 +1157,7 @@ export default function SVGEditor({
 				</div>
 			)}
 
-			<div className="absolute bottom-2 left-2 flex items-center gap-2 border-2 border-stone-200 rounded-lg p-1 shadow-sm">
+			<div className="absolute bottom-2 left-2 flex items-center gap-2 border-2 border-stone-200 rounded-lg p-1 shadow-sm bg-white z-10">
 				<Button
 					onClick={handleZoomOut}
 					variant="ghost"
