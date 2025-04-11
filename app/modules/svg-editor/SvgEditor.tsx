@@ -1083,10 +1083,16 @@ export default function SVGEditor({
 							KittellGraph
 						</SelectItem>
 						<SelectItem value="SylvesterGraph">
-							SylvesterGraph <span className="text-semibold">(est. 2 min)</span>
+							SylvesterGraph{" "}
+							<span className="font-semibold text-stone-500">
+								(est. 2 min)
+							</span>
 						</SelectItem>
 						<SelectItem value="SzekeresSnarkGraph">
-							SzekeresSnarkGraph <span className="text-semibold">(est. 15 min)</span>
+							SzekeresSnarkGraph{" "}
+							<span className="font-semibold text-stone-500">
+								(est. 15 min)
+							</span>
 						</SelectItem>
 						<SelectItem value="StarGraph_100">
 							StarGraph_100
