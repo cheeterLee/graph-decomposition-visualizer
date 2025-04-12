@@ -12,9 +12,7 @@ import { useWindowSize } from "@react-hookz/web";
 import editorSlice from "~/modules/svg-editor/slices/editorSlice";
 import SVGEditor from "~/modules/svg-editor/SvgEditor";
 import React from "react";
-import {
-	WorkerProvider,
-} from "~/modules/algorithm-runner/context/WorkerContext";
+import { WorkerProvider } from "~/modules/algorithm-runner/context/WorkerContext";
 
 export const meta: MetaFunction = () => {
 	return [
@@ -40,7 +38,16 @@ export default function App() {
 	const [isValidScreenSize, setIsValidScreenSize] =
 		React.useState<boolean>(true);
 
+	// hack fix for highlighting not work
+	const [isClickOnNodeWithHighestId, setIsClickOnNodeWithHighestId] =
+		React.useState<boolean>(false);
+
 	const handleClickOnSpareScreen = () => {
+		if (isClickOnNodeWithHighestId) {
+			setIsClickOnNodeWithHighestId(false);
+			return;
+		}
+
 		dispatch(editorSlice.actions.setHighlightedElement(null));
 		dispatch(editorSlice.actions.exitAddEdgeMode());
 
@@ -64,7 +71,7 @@ export default function App() {
 			className="flex items-center justify-center gap-1 w-screen xl:px-16 lg:px-10 px-4 min-h-screen"
 		>
 			<WorkerProvider>
-				<SVGEditor defaultRawData={data} />
+				<SVGEditor defaultRawData={data} abortClearScreen={setIsClickOnNodeWithHighestId} />
 				<Outlet />
 			</WorkerProvider>
 			<div

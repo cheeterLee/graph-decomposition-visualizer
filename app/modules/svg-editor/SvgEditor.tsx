@@ -15,11 +15,8 @@ import {
 	DialogTrigger,
 } from "~/components/ui/dialog";
 import {
-	Grab,
-	MousePointer2,
 	RotateCcw,
 	Plus,
-	Palette,
 	Trash2,
 	Spline,
 	Upload,
@@ -42,19 +39,15 @@ import {
 import { populateGraphData } from "~/data/dataPopulation";
 import { useToast } from "~/hooks/use-toast";
 import { useWorker } from "../algorithm-runner/context/WorkerContext";
-import { Badge } from "~/components/ui/badge";
 
 export default function SVGEditor({
 	defaultRawData,
+	abortClearScreen,
 }: {
 	defaultRawData: string;
+	abortClearScreen: React.Dispatch<React.SetStateAction<boolean>>
 }) {
-	/* Following 2 lines could be removed, not using as this moment */
-	// const { data, g, e, maxId } = preData;
-	// const graph = useMap<number, Vertex>(Array.from(g.entries()));
-
 	const {
-		// cursorMode,
 		vertices,
 		edges,
 		nextVertexId,
@@ -218,6 +211,10 @@ export default function SVGEditor({
 	};
 
 	const dragStarted = (event: d3.D3DragEvent<Element, Vertex, Vertex>) => {
+
+
+		(event.sourceEvent as MouseEvent).cancelBubble = true;
+
 		initPosRef.current.x = event.x;
 		initPosRef.current.y = event.y;
 
@@ -233,6 +230,9 @@ export default function SVGEditor({
 	};
 
 	const dragged = (event: d3.D3DragEvent<Element, Vertex, unknown>) => {
+
+		(event.sourceEvent as MouseEvent).cancelBubble = true;
+
 		if (!svgContainerRef.current) return;
 
 		const nodeDragged = event.subject as Vertex;
@@ -252,10 +252,6 @@ export default function SVGEditor({
 		event: d3.D3DragEvent<Element, Vertex, Vertex>,
 		d: Vertex
 	) => {
-		// console.log('d', d)
-
-		// console.log("init", initPosRef.current);
-		// console.log("event", event);
 		const group = d3
 			.select(event.sourceEvent.target.parentNode as SVGGElement)
 			.classed("dragging", false)
@@ -268,15 +264,19 @@ export default function SVGEditor({
 			.select("text")
 			.attr("stroke", colorPalette.lightTheme.vertexBorder);
 
+		// check if is click event
 		if (
 			initPosRef.current.x === event.x &&
 			initPosRef.current.y === event.y
 		) {
-			// console.log("is click!");
 			if (highlightedGroups.length || previewHighlightedGroups.length) {
 				dispatch(globalSlice.actions.clearGroupsHighlighting())
 				dispatch(globalSlice.actions.clearPreviewHighlight())
 				dispatch(globalSlice.actions.clearHighlight())
+			}
+
+			if (d.id === nextVertexId - 1) {
+				abortClearScreen(true)
 			}
 
 			// click logic
@@ -365,22 +365,9 @@ export default function SVGEditor({
 			return;
 		}
 
-		// console.log("is drag!");
-
-		// const group = d3
-		// 	.select(event.sourceEvent.target.parentNode as SVGGElement)
-		// 	.classed("dragging", false)
-		// 	.raise();
-
-		// group
-		// 	.select("circle")
-		// 	.attr("stroke", colorPalette.lightTheme.vertexBorder);
-		// group
-		// 	.select("text")
-		// 	.attr("stroke", colorPalette.lightTheme.vertexBorder);
-
 		initPosRef.current.x = -1;
 		initPosRef.current.y = -1;
+		return;
 	};
 
 	const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -941,6 +928,9 @@ export default function SVGEditor({
 					.on("drag", dragged)
 					.on("end", dragEnded)
 			)
+			// .on("click", function (event: MouseEvent) {
+			// 	event.stopPropagation();
+			// })
 			// .on("click", function (event: MouseEvent, d) {
 			// 	event.stopPropagation();
 
