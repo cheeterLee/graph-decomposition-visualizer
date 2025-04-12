@@ -122,6 +122,7 @@ export default function SVGEditor({
 		setSampleGraphSelectValue(val);
 		workerRef.current?.terminate();
 		dispatch(runnerSlice.actions.setIsRunning(false));
+		dispatch(editorSlice.actions.setHighlightedElement(null))
 	};
 
 	const [zoomPercentage, setZoomPercentage] = React.useState<number>(100);
