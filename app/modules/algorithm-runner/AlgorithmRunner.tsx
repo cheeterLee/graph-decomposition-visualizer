@@ -57,6 +57,10 @@ export default function AlgorithmRunner() {
 
 		console.log('start', new Date())
 
+		dispatch(globalSlice.actions.clearGroupsHighlighting())
+		dispatch(globalSlice.actions.clearPreviewHighlight())
+		dispatch(globalSlice.actions.clearHighlight())
+
 		dispatch(runnerSlice.actions.setIsRunning(true));
 
 		const worker = new Worker(
