@@ -10,12 +10,13 @@ import {
 	FileText,
 	RotateCcw,
 } from "lucide-react";
-import { Link, useNavigate } from "@remix-run/react";
+import { useNavigate } from "@remix-run/react";
 import displaySlice from "./slices/displaySlice";
 import globalSlice from "~/globalSlice";
 import editorSlice from "../svg-editor/slices/editorSlice";
 import { colorPalette } from "~/lib/config";
 import { useToast } from "~/hooks/use-toast";
+import { useResizeObserver } from "@react-hookz/web";
 
 // Define a node type used by the simulation.
 interface NodeDatum {
@@ -45,7 +46,6 @@ export default function CanvasDisplay() {
 
 	const {
 		bagContainsHighlightedEdge,
-		hasResult,
 		hasHighlightedNode,
 		highlightedNodeId,
 		hasHighlightedBag,
@@ -55,8 +55,6 @@ export default function CanvasDisplay() {
 		selectedBagIds,
 		highlightingColorIdx,
 		showAddToGroupButton,
-		previewHighlightedGroups,
-		highlightedGroups,
 	} = useAppSelector((state) => state.global);
 
 	const [simulationDone, setSimulationDone] = React.useState(false);
@@ -71,6 +69,8 @@ export default function CanvasDisplay() {
 		width: number;
 		height: number;
 	} | null>(null);
+	const [hideCanvasWidgetText, setHideCanvasWidgetText] =
+		React.useState<boolean>(false);
 
 	const [zoomPercentage, setZoomPercentage] = React.useState<number>(100);
 
@@ -81,6 +81,18 @@ export default function CanvasDisplay() {
 	const { toast } = useToast();
 
 	const canvasRef = React.useRef<HTMLCanvasElement>(null);
+
+	const canvasObserver = useResizeObserver(canvasRef, () => {
+		const canvas = canvasRef.current;
+		if (!canvas) return;
+		const w = canvas.clientWidth;
+
+		if (w < 480) {
+			setHideCanvasWidgetText(true);
+		} else {
+			setHideCanvasWidgetText(false);
+		}
+	});
 
 	const zoomRef = React.useRef<d3.ZoomBehavior<
 		HTMLCanvasElement,
@@ -159,23 +171,13 @@ export default function CanvasDisplay() {
 		const canvas = canvasRef.current!;
 		const rect = canvas.getBoundingClientRect();
 
-		// console.log("canvas left", rect.left, "canvas right", rect.right);
-		// console.log("event x", event.clientX, "event y", event.clientY);
-
 		// Convert screen coordinates to canvas coordinates
 		const x = (event.clientX - rect.left) * (canvas.width / rect.width);
 		const y = (event.clientY - rect.top) * (canvas.height / rect.height);
 		const transform = transformRef.current || d3.zoomIdentity;
-		// console.log("transform", transform);
 
 		const transformedX = (x - transform.x) / transform.k;
 		const transformedY = (y - transform.y) / transform.k;
-		// console.log(
-		// 	"transformed x",
-		// 	transformedX,
-		// 	"transformed y",
-		// 	transformedY
-		// );
 
 		return { x: transformedX, y: transformedY };
 	};
@@ -307,44 +309,12 @@ export default function CanvasDisplay() {
 			d3.select(canvasRef.current)
 				.transition()
 				.call(zoomRef.current.scaleBy, 1.2);
-
-			// const canvas = canvasRef.current;
-
-			// const transform = transformRef.current || d3.zoomIdentity;
-
-			// // Calculate the center of the current view in canvas coordinates
-			// const canvasWidth = canvas.getBoundingClientRect().width;
-			// const canvasHeight = canvas.getBoundingClientRect().height;
-
-			// const centerX = transform.invertX(canvasWidth / 2);
-			// const centerY = transform.invertY(canvasHeight / 2);
-
-			// // Zoom relative to the center of the current view
-			// d3.select(canvas)
-			// 	.transition()
-			// 	.call(zoomRef.current.scaleBy, 1.2, [centerX, centerY]);
 		}
 	};
 
 	const handleZoomOut = (e: React.SyntheticEvent) => {
 		e.stopPropagation();
 		if (canvasRef.current && zoomRef.current) {
-			// d3.select(canvasRef.current)
-			// 	.transition()
-			// 	.call(zoomRef.current.scaleBy, 1 / 1.2);
-
-			// const canvas = canvasRef.current;
-
-			// // Use the current transform or default to identity
-			// const transform = transformRef.current || d3.zoomIdentity;
-
-			// // Calculate the center of the current view in canvas coordinates
-			// const canvasWidth = canvas.getBoundingClientRect().width;
-			// const canvasHeight = canvas.getBoundingClientRect().height;
-
-			// const centerX = transform.invertX(canvasWidth / 2);
-			// const centerY = transform.invertY(canvasHeight / 2);
-
 			// Zoom relative to the center of the current view
 			d3.select(canvasRef.current)
 				.transition()
@@ -534,7 +504,6 @@ export default function CanvasDisplay() {
 					colorPalette.lightTheme.colorGroups[colorIdx];
 			}
 
-			// context.fillStyle = colorPalette.lightTheme.vertexBorder;
 			context.font = "12px sans-serif";
 			const textMetrics = context.measureText(text);
 			context.fillText(text, x - textMetrics.width / 2, y + 4);
@@ -749,7 +718,10 @@ export default function CanvasDisplay() {
 								className="text-stone-400 pointer-events-auto"
 							>
 								<Eclipse className="text-stone-400" />
-								View Graph
+
+								{!hideCanvasWidgetText && (
+									<span className="">View Graph</span>
+								)}
 							</Button>
 						) : (
 							<Button
@@ -758,7 +730,10 @@ export default function CanvasDisplay() {
 								className="text-stone-400 pointer-events-auto"
 							>
 								<FileText className="text-stone-400" />
-								View Raw
+
+								{!hideCanvasWidgetText && (
+									<span className="">View Raw</span>
+								)}
 							</Button>
 						)}
 
@@ -768,7 +743,9 @@ export default function CanvasDisplay() {
 							className="text-stone-400 pointer-events-auto"
 						>
 							<Download className="text-stone-400" />
-							Download Raw Result
+							{!hideCanvasWidgetText && (
+								<span className="">Download Raw Result</span>
+							)}
 						</Button>
 					</div>
 				</div>
@@ -800,7 +777,7 @@ export default function CanvasDisplay() {
 						className="text-stone-400 pointer-events-auto"
 					>
 						<RotateCcw className="text-stone-400" />
-						Clear Highlights
+						{!hideCanvasWidgetText && <span>Clear Highlights</span>}
 					</Button>
 				</div>
 			</div>
@@ -842,7 +819,7 @@ export default function CanvasDisplay() {
 							</Button>
 						</div>
 					)}
-					<div className="absolute bottom-2 left-2 flex items-center gap-2 border-2 border-stone-200 rounded-lg p-1 shadow-sm z-10 bg-white">
+					<div className="absolute bottom-2 left-2 flex items-center gap-2 border-2 border-stone-200 rounded-lg p-1 shadow-sm z-20 bg-white">
 						<Button
 							onClick={handleZoomOut}
 							variant="ghost"
