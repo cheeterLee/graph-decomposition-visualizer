@@ -20,6 +20,7 @@ import {
 	Trash2,
 	Spline,
 	Upload,
+	Download,
 } from "lucide-react";
 import { Edge, SimLink, SimNode, Vertex } from "./types/type";
 import type { RootState } from "~/store";
@@ -45,15 +46,10 @@ export default function SVGEditor({
 	abortClearScreen,
 }: {
 	defaultRawData: string;
-	abortClearScreen: React.Dispatch<React.SetStateAction<boolean>>
+	abortClearScreen: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
-	const {
-		vertices,
-		edges,
-		nextVertexId,
-		isAddEdgeMode,
-		highlightedElement,
-	} = useAppSelector((state: RootState) => state.editor);
+	const { vertices, edges, nextVertexId, isAddEdgeMode, highlightedElement } =
+		useAppSelector((state: RootState) => state.editor);
 
 	const {
 		hasResult,
@@ -122,7 +118,7 @@ export default function SVGEditor({
 		setSampleGraphSelectValue(val);
 		workerRef.current?.terminate();
 		dispatch(runnerSlice.actions.setIsRunning(false));
-		dispatch(editorSlice.actions.setHighlightedElement(null))
+		dispatch(editorSlice.actions.setHighlightedElement(null));
 	};
 
 	const [zoomPercentage, setZoomPercentage] = React.useState<number>(100);
@@ -211,9 +207,40 @@ export default function SVGEditor({
 		dispatch(editorSlice.actions.removeEdge(targetEdgeId));
 	};
 
+	// download source graph
+	const handleDownload = (e: React.SyntheticEvent) => {
+		e.stopPropagation();
+
+		toast({
+			title: "Starting download!",
+			duration: 2000,
+		});
+
+		// generate source graph .gr file
+		let sourceData = "";
+		sourceData += `p tw ${vertices.length} ${edges.length}\n`;
+		for (const e of edges) {
+			sourceData += `${e.uId} ${e.vId}\n`;
+		}
+
+		const blob = new Blob([sourceData], {
+			type: "text/plain;charset=utf-8",
+		});
+
+		// create an object URL and a temporary link element to trigger the download.
+		const url = window.URL.createObjectURL(blob);
+		const link = document.createElement("a");
+		link.href = url;
+		link.download = "source.gr";
+
+		// append the link to the document, trigger a click, and then clean up.
+		document.body.appendChild(link);
+		link.click();
+		document.body.removeChild(link);
+		window.URL.revokeObjectURL(url);
+	};
+
 	const dragStarted = (event: d3.D3DragEvent<Element, Vertex, Vertex>) => {
-
-
 		(event.sourceEvent as MouseEvent).cancelBubble = true;
 
 		initPosRef.current.x = event.x;
@@ -231,7 +258,6 @@ export default function SVGEditor({
 	};
 
 	const dragged = (event: d3.D3DragEvent<Element, Vertex, unknown>) => {
-
 		(event.sourceEvent as MouseEvent).cancelBubble = true;
 
 		if (!svgContainerRef.current) return;
@@ -271,13 +297,13 @@ export default function SVGEditor({
 			initPosRef.current.y === event.y
 		) {
 			if (highlightedGroups.length || previewHighlightedGroups.length) {
-				dispatch(globalSlice.actions.clearGroupsHighlighting())
-				dispatch(globalSlice.actions.clearPreviewHighlight())
-				dispatch(globalSlice.actions.clearHighlight())
+				dispatch(globalSlice.actions.clearGroupsHighlighting());
+				dispatch(globalSlice.actions.clearPreviewHighlight());
+				dispatch(globalSlice.actions.clearHighlight());
 			}
 
 			if (d.id === nextVertexId - 1) {
-				abortClearScreen(true)
+				abortClearScreen(true);
 			}
 
 			// click logic
@@ -725,10 +751,13 @@ export default function SVGEditor({
 			.attr("stroke-width", 3)
 			.on("click", function (event: MouseEvent, d) {
 				event.stopPropagation();
-				if (highlightedGroups.length || previewHighlightedGroups.length) {
-					dispatch(globalSlice.actions.clearGroupsHighlighting())
-					dispatch(globalSlice.actions.clearPreviewHighlight())
-					dispatch(globalSlice.actions.clearHighlight())
+				if (
+					highlightedGroups.length ||
+					previewHighlightedGroups.length
+				) {
+					dispatch(globalSlice.actions.clearGroupsHighlighting());
+					dispatch(globalSlice.actions.clearPreviewHighlight());
+					dispatch(globalSlice.actions.clearHighlight());
 				}
 				const edgeKey = `${Math.min(d.uId, d.vId)}-${Math.max(
 					d.uId,
@@ -1223,6 +1252,18 @@ export default function SVGEditor({
 						</SelectItem>
 					</SelectContent>
 				</Select>
+				<Separator
+					orientation="vertical"
+					className="h-[60%] bg-stone-300"
+				/>
+				<Button
+					onClick={handleDownload}
+					size="icon"
+					variant="ghost"
+					className="text-stone-400 pointer-events-auto"
+				>
+					<Download className="text-stone-400" />
+				</Button>
 			</div>
 
 			{isInEditMode && !isRunning && isNodeSelected && (
